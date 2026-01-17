@@ -1094,7 +1094,9 @@ const BloodButton = styled.button`
   color: ${(props) => (props.active ? "#b71c1c" : "#64748b")};
   font-weight: 900;
   cursor: pointer;
-  transition: background-color 0.2s, border-color 0.2s;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
 
   &:hover {
     background: ${(props) => (props.active ? "#fff5f5" : "#e2e8f0")};
@@ -1178,7 +1180,10 @@ function Emergency() {
       <MainWrapper>
         <ImageSection>
           <div className="img-container">
-            <img src="/assets/blood.png" alt="Daraa Blood Bank" />
+            <img
+              src={`${process.env.PUBLIC_URL}/assets/blood.png`}
+              alt="Daraa Blood Bank"
+            />
           </div>
           <h1>قطرة دم تساوي حياة</h1>
           <p>

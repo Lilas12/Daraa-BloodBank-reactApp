@@ -1076,8 +1076,8 @@ const SubmitButton = styled(motion.button)`
     props.$status === "success"
       ? props.theme.colors.medicalGreen
       : props.$status === "sending"
-      ? props.theme.colors.medicalTeal
-      : props.theme.colors.primaryNavy};
+        ? props.theme.colors.medicalTeal
+        : props.theme.colors.primaryNavy};
   color: white;
   border: none;
   border-radius: 20px;
@@ -1228,7 +1228,7 @@ function RequestBlood() {
                         <option key={t} value={t}>
                           {t}
                         </option>
-                      )
+                      ),
                     )}
                   </InputField>
                 </InputWrapper>
