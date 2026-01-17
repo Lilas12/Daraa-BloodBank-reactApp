@@ -1009,7 +1009,7 @@ const ImageSection = styled.div`
   .img-container {
     width: 100%;
     max-width: 500px;
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 1/1;
     display: flex;
     align-items: center;
     justify-content: center;
