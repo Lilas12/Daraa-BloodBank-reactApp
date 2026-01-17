@@ -1,0 +1,30 @@
+src/AppLayout.css .app-container {
+  display: flex;
+  min-height: 100vh;
+  direction: rtl; /* Stöd för arabiska */
+  background-color: #f1f5f9;
+}
+
+.main-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden; /* Förhindrar att hela sidan scrollar, bara innehållet */
+}
+
+.page-content {
+  padding: 30px;
+  flex: 1;
+  overflow-y: auto; /* Scrolla bara här när listan är lång */
+}
+
+.loading-screen {
+  background: #05071a;
+  height: 100vh;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
+}
