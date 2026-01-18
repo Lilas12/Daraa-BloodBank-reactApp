@@ -43,7 +43,6 @@ const GlobalStyle = createGlobalStyle`
 
 const MainWrapper = styled.div`
   display: grid;
-  /* Vi fixerar kolumnerna: bilden får flexibelt utrymme, formuläret är låst till 480px */
   grid-template-columns: minmax(300px, 1fr) 480px;
   align-items: start;
   gap: 40px;
@@ -106,7 +105,7 @@ const FormContainer = styled.div`
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  height: 750px; /* Låst höjd för hela boxen */
+  height: 750px;
 `;
 
 const BloodHeader = styled.div`
