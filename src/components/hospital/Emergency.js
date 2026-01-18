@@ -22,7 +22,7 @@ const pulse = keyframes`
 `;
 
 const GlobalStyle = createGlobalStyle`
-  /* @import url removed: use <link> in public/index.html instead */
+
 
   *, *::before, *::after {
     box-sizing: border-box;

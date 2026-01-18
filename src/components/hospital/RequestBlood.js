@@ -47,14 +47,13 @@ const spin = keyframes`
   to { transform: rotate(360deg); }
 `;
 
-// --- Global Style ---
 const GlobalStyle = createGlobalStyle`
   body {
     margin: 0; padding: 0;
     font-family: 'Cairo', sans-serif;
     direction: rtl;
-    background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
-    color: ${(props) => props.theme.colors.textDark};
+     background-color: #f8fafc;
+    color: #003049;
     min-height: 100vh;
   }
 `;
