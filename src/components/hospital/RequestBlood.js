@@ -17,13 +17,14 @@ import {
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
+// --- Tema ---
 const theme = {
   colors: {
     primaryNavy: "#1a237e",
     medicalTeal: "#00bcd4",
     medicalGreen: "#4caf50",
     emergencyRed: "#f44336",
-    bgWhite: "#f8fafc", // Något ljusare/fräschare
+    bgWhite: "#f8fafc",
     cardBg: "#ffffff",
     border: "#e2e8f0",
     textDark: "#003049",
@@ -34,7 +35,7 @@ const theme = {
   },
 };
 
-// --- ANIMATIONER ---
+// --- Animationer ---
 const floating = keyframes`
   0% { transform: translateY(0px) rotate(0deg); }
   50% { transform: translateY(-20px) rotate(1deg); }
@@ -46,19 +47,19 @@ const spin = keyframes`
   to { transform: rotate(360deg); }
 `;
 
+// --- Global Style ---
 const GlobalStyle = createGlobalStyle`
   body {
-    margin: 0;
-    padding: 0;
-    background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+    margin: 0; padding: 0;
     font-family: 'Cairo', sans-serif;
     direction: rtl;
+    background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
     color: ${(props) => props.theme.colors.textDark};
     min-height: 100vh;
   }
-
 `;
 
+// --- Styled Components ---
 const MainLayout = styled.div`
   display: flex;
   align-items: center;
@@ -70,7 +71,7 @@ const MainLayout = styled.div`
   margin: 0 auto;
 
   @media (max-width: ${(props) => props.theme.breakpoints.tablet}) {
-    flex-direction: column; /* Bilden hamnar överst på mobilen */
+    flex-direction: column;
     padding-top: 20px;
   }
 `;
@@ -81,12 +82,10 @@ const ImageSection = styled(motion.div)`
   flex-direction: column;
   align-items: center;
   text-align: center;
-  position: relative;
 
   .image-container {
     animation: ${floating} 5s ease-in-out infinite;
     position: relative;
-
     img {
       width: 100%;
       max-width: 550px;
@@ -95,8 +94,6 @@ const ImageSection = styled(motion.div)`
       box-shadow: 0 30px 60px rgba(26, 35, 126, 0.2);
       border: 10px solid white;
     }
-
-    /* En dekorativ cirkel bakom bilden */
     &::before {
       content: "";
       position: absolute;
@@ -119,8 +116,6 @@ const ImageSection = styled(motion.div)`
       color: #1a237e;
       font-weight: 900;
       font-size: 2.5rem;
-      margin: 0;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     }
     p {
       color: #475569;
@@ -227,7 +222,26 @@ const InputField = styled.input`
     outline: none;
     border-color: ${(props) => props.theme.colors.medicalTeal};
     background: white;
-    box-shadow: 0 0 0 4px rgba(0, 188, 212, 0.1);
+    box-shadow: 0 0 10px rgba(0, 188, 212, 0.1);
+  }
+`;
+
+// --- Fixad select ---
+const SelectField = styled.select`
+  width: 100%;
+  padding: 14px 15px;
+  border-radius: 16px;
+  border: 2px solid #f1f5f9;
+  background: #f8fafc;
+  font-family: "Cairo";
+  font-size: 1rem;
+  color: #003049;
+  appearance: none;
+  &:focus {
+    outline: none;
+    border-color: ${(props) => props.theme.colors.medicalTeal};
+    background: white;
+    box-shadow: 0 0 10px rgba(0, 188, 212, 0.1);
   }
 `;
 
@@ -262,6 +276,7 @@ const SubmitButton = styled(motion.button)`
   }
 `;
 
+// --- Component ---
 function RequestBlood() {
   const [formData, setFormData] = useState({
     patientName: "",
@@ -295,7 +310,6 @@ function RequestBlood() {
     <ThemeProvider theme={theme}>
       <GlobalStyle />
       <MainLayout>
-        {/* BILDSEKTIONEN - NU TILL VÄNSTER */}
         <ImageSection
           initial={{ opacity: 0, x: -100 }}
           animate={{ opacity: 1, x: 0 }}
@@ -316,7 +330,6 @@ function RequestBlood() {
           </div>
         </ImageSection>
 
-        {/* FORMULÄRSEKTIONEN - NU TILL HÖGER */}
         <Card
           initial={{ opacity: 0, x: 100 }}
           animate={{ opacity: 1, x: 0 }}
@@ -353,8 +366,7 @@ function RequestBlood() {
                 </Label>
                 <InputWrapper>
                   <FaMapMarkerAlt />
-                  <InputField
-                    as="select"
+                  <SelectField
                     required
                     value={formData.area}
                     onChange={(e) =>
@@ -367,7 +379,7 @@ function RequestBlood() {
                         {area}
                       </option>
                     ))}
-                  </InputField>
+                  </SelectField>
                 </InputWrapper>
               </FormGroup>
 
@@ -377,8 +389,7 @@ function RequestBlood() {
                 </Label>
                 <InputWrapper>
                   <FaTint />
-                  <InputField
-                    as="select"
+                  <SelectField
                     required
                     value={formData.bloodType}
                     onChange={(e) =>
@@ -393,7 +404,7 @@ function RequestBlood() {
                         </option>
                       ),
                     )}
-                  </InputField>
+                  </SelectField>
                 </InputWrapper>
               </FormGroup>
 

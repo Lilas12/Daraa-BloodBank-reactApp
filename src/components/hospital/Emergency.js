@@ -5,15 +5,10 @@ import styled, {
   keyframes,
   css,
 } from "styled-components";
-import {
-  FaTint,
-  FaCheckCircle,
-  FaMapMarkerAlt,
-  FaUserPlus,
-  FaPhoneAlt,
-} from "react-icons/fa";
+import { FaTint, FaCheckCircle, FaMapMarkerAlt } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
+// --- ANIMATIONER ---
 const float = keyframes`
   0% { transform: translateY(0px); }
   50% { transform: translateY(-15px); }
@@ -21,12 +16,14 @@ const float = keyframes`
 `;
 
 const pulse = keyframes`
-  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(183, 28, 28, 0.4); }
-  70% { transform: scale(1.03); box-shadow: 0 0 0 15px rgba(183, 28, 28, 0); }
-  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(183, 28, 28, 0); }
+  0% { transform: scale(1); box-shadow: 0 0 10px rgba(183,28,28,0.2); }
+  70% { transform: scale(1.03); box-shadow: 0 0 15px rgba(183,28,28,0.1); }
+  100% { transform: scale(1); box-shadow: 0 0 10px rgba(183,28,28,0.2); }
 `;
 
 const GlobalStyle = createGlobalStyle`
+  /* @import url removed: use <link> in public/index.html instead */
+
   *, *::before, *::after {
     box-sizing: border-box;
   }
@@ -43,7 +40,7 @@ const GlobalStyle = createGlobalStyle`
 
 const MainWrapper = styled.div`
   display: grid;
-  grid-template-columns: minmax(300px, 1fr) 480px;
+  grid-template-columns: 1fr 480px; /* minmax removed */
   align-items: start;
   gap: 40px;
   max-width: 1200px;
@@ -68,7 +65,6 @@ const ImageSection = styled.div`
   .img-container {
     width: 100%;
     max-width: 500px;
-
     display: flex;
     align-items: center;
     justify-content: center;
@@ -78,7 +74,7 @@ const ImageSection = styled.div`
     width: 100%;
     height: auto;
     border-radius: 40px;
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.1); /* simplified */
     animation: ${float} 5s infinite ease-in-out;
     display: block;
   }
@@ -127,7 +123,7 @@ const SectionTitle = styled.h4`
 `;
 
 const StyledSelect = styled.select`
-  width: 95%;
+  width: 100%; /* calc removed */
   margin: 0 25px;
   padding: 16px;
   border-radius: 15px;
@@ -147,7 +143,6 @@ const BloodGrid = styled.div`
 const BloodButton = styled.button`
   padding: 12px 0;
   border-radius: 12px;
-  /* Vi använder en osynlig border när den inte är aktiv för att storleken ska vara samma */
   border: 2px solid ${(props) => (props.active ? "#b71c1c" : "transparent")};
   background: ${(props) => (props.active ? "#fff5f5" : "#f1f5f9")};
   color: ${(props) => (props.active ? "#b71c1c" : "#64748b")};
@@ -193,6 +188,7 @@ const MainActionButton = styled(motion.button)`
     css`
       animation: ${pulse} 2s infinite;
     `}
+
   &:disabled {
     background: #94a3b8;
   }
@@ -235,7 +231,6 @@ function Emergency() {
         ref={audioPlayer}
         src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"
       />
-
       <MainWrapper>
         <ImageSection>
           <div className="img-container">
@@ -320,43 +315,6 @@ function Emergency() {
               )}
             </AnimatePresence>
           </ButtonArea>
-
-          <div style={{ display: "flex", gap: "10px", padding: "0 25px 30px" }}>
-            <button
-              style={{
-                flex: 1,
-                padding: "18px",
-                borderRadius: "15px",
-                border: "1px solid #eee",
-                background: "#f8fafc",
-                fontWeight: "900",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "8px",
-              }}
-            >
-              <FaUserPlus color="#b71c1c" /> تسجيل متberع
-            </button>
-            <button
-              style={{
-                flex: 1,
-                padding: "18px",
-                borderRadius: "18px",
-                border: "1px solid #eee",
-                background: "#f8fafc",
-                fontWeight: "900",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "8px",
-              }}
-            >
-              <FaPhoneAlt color="#1a237e" /> الإسعاف
-            </button>
-          </div>
         </FormContainer>
       </MainWrapper>
     </ThemeProvider>
