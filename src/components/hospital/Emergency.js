@@ -234,10 +234,7 @@ function Emergency() {
       <MainWrapper>
         <ImageSection>
           <div className="img-container">
-            <img
-              src={`${process.env.PUBLIC_URL}/assets/blood.png`}
-              alt="Daraa Blood Bank"
-            />
+            <img src="/assets/blood.png" alt="طلب دم عاجل" />
           </div>
           <h1>قطرة دم تساوي حياة</h1>
           <p>

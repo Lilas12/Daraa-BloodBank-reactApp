@@ -272,7 +272,6 @@ const SubmitButton = styled(motion.button)`
   }
 `;
 
-// --- Component ---
 function RequestBlood() {
   const [formData, setFormData] = useState({
     patientName: "",
@@ -312,10 +311,7 @@ function RequestBlood() {
           transition={{ duration: 1, ease: "easeOut" }}
         >
           <div className="image-container">
-            <img
-              src={process.env.PUBLIC_URL + "/assets/blood2.png"}
-              alt="طلب دم عاجل"
-            />
+            <img src="/assets/blood2.png" alt="طلب دم عاجل" />
           </div>
           <div className="text-box">
             <h1>كل نقطة بتفرق</h1>
