@@ -17,7 +17,6 @@ import {
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
-// --- Tema ---
 const theme = {
   colors: {
     primaryNavy: "#1a237e",
@@ -35,7 +34,6 @@ const theme = {
   },
 };
 
-// --- Animationer ---
 const floating = keyframes`
   0% { transform: translateY(0px) rotate(0deg); }
   50% { transform: translateY(-20px) rotate(1deg); }
@@ -58,7 +56,6 @@ const GlobalStyle = createGlobalStyle`
   }
 `;
 
-// --- Styled Components ---
 const MainLayout = styled.div`
   display: flex;
   align-items: center;
