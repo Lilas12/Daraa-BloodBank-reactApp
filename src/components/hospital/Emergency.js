@@ -127,7 +127,7 @@ const SectionTitle = styled.h4`
 `;
 
 const StyledSelect = styled.select`
-  width: calc(100% - 50px);
+  width: 95%;
   margin: 0 25px;
   padding: 16px;
   border-radius: 15px;
