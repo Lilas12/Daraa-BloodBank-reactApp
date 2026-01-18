@@ -51,7 +51,6 @@ function App() {
       {!user ? (
         <Login onLogin={setUser} />
       ) : (
-        /* Vi ändrar klassnamnet här för att signalera en vertikal layout */
         <div className="app-main-layout">
           <Navbar user={user} onLogout={handleLogout} />
 

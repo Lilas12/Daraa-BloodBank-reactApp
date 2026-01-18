@@ -18,8 +18,8 @@ const FooterWrapper = styled.footer`
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   direction: rtl;
   font-family: "Inter", sans-serif;
-  width: 100%; /* Viktigt: tar hela bredden */
-  margin-top: auto; /* Trycker ner footern om sidan är kort */
+  width: 100%;
+  margin-top: auto;
 `;
 
 const Container = styled.div`

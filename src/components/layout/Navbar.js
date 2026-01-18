@@ -14,10 +14,6 @@ import {
   FaTint,
 } from "react-icons/fa";
 
-// ==========================================
-// STYLED COMPONENTS
-// ==========================================
-
 const NavContainer = styled.header`
   background: #0f172a;
   color: white;
@@ -30,7 +26,7 @@ const NavContainer = styled.header`
   top: 0;
   z-index: 1000;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  direction: rtl; /* Stöd för arabisk textriktning */
+  direction: rtl;
 `;
 
 const RightSection = styled.div`
@@ -54,7 +50,7 @@ const Logo = styled.div`
   h2 {
     font-size: 1.4rem;
     margin: 0;
-    color: #ef4444; /* Röd färg enligt önskemål */
+    color: #ef4444;
     font-weight: 800;
     white-space: nowrap;
     letter-spacing: -0.5px;
@@ -158,20 +154,15 @@ const LogoutBtn = styled.button`
 
   span {
     @media (max-width: 700px) {
-      display: none; /* Döljer texten på mobiler för att spara plats */
+      display: none;
     }
   }
 `;
-
-// ==========================================
-// MAIN COMPONENT
-// ==========================================
 
 const Navbar = ({ onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
-  // "الرئيسية" är borttagen eftersom Logo sköter navigering till "/"
   const menuItems = [
     { name: "مخزون الدم", to: "/inventory", icon: <FaWarehouse /> },
     { name: "المرضى", to: "/patients", icon: <FaUserInjured /> },
@@ -183,7 +174,6 @@ const Navbar = ({ onLogout }) => {
 
   return (
     <NavContainer>
-      {/* HÖGER SIDA: LOGO & MENY */}
       <RightSection>
         <Logo
           onClick={() => {

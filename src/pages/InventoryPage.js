@@ -89,9 +89,6 @@ function BloodBankUltimate() {
     { id: 1, time: "08:30", msg: "نظام إدارة المخزون نشط" },
   ]);
 
-  // --- LOGIK ---
-
-  // Notis-funktion
   const notify = (msg, type = "success") => {
     const id = Date.now();
     setNotifications((prev) => [...prev, { id, msg, type }]);
@@ -107,7 +104,6 @@ function BloodBankUltimate() {
     setLogs((prev) => [{ id, time, msg }, ...prev].slice(0, 10));
   };
 
-  // Filtrering och Sök
   const filteredInventory = useMemo(() => {
     return inventory.filter((item) => {
       const matchesSearch = item.type
@@ -133,7 +129,6 @@ function BloodBankUltimate() {
 
   return (
     <Container>
-      {/* Aviseringar */}
       <NotificationArea>
         <AnimatePresence>
           {notifications.map((n) => (
@@ -295,7 +290,6 @@ function BloodBankUltimate() {
         </SidePanel>
       </MainGrid>
 
-      {/* Modal - Detaljerad Graf */}
       <AnimatePresence>
         {selectedBlood && (
           <Overlay
@@ -364,8 +358,6 @@ function BloodBankUltimate() {
     </Container>
   );
 }
-
-// --- CSS STYLES ---
 
 const Container = styled.div`
   background: #f1f5f9;
