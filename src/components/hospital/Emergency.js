@@ -1,14 +1,13 @@
 import React, { useState, useRef } from "react";
 import styled, {
-  createGlobalStyle,
   ThemeProvider,
+  createGlobalStyle,
   keyframes,
   css,
 } from "styled-components";
 import { FaTint, FaCheckCircle, FaMapMarkerAlt } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
-// --- ANIMATIONER ---
 const float = keyframes`
   0% { transform: translateY(0px); }
   50% { transform: translateY(-15px); }
@@ -16,18 +15,13 @@ const float = keyframes`
 `;
 
 const pulse = keyframes`
-  0% { transform: scale(1); box-shadow: 0 0 10px rgba(183,28,28,0.2); }
-  70% { transform: scale(1.03); box-shadow: 0 0 15px rgba(183,28,28,0.1); }
-  100% { transform: scale(1); box-shadow: 0 0 10px rgba(183,28,28,0.2); }
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(183, 28, 28, 0.4); }
+  70% { transform: scale(1.03); box-shadow: 0 0 0 15px rgba(183, 28, 28, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(183, 28, 28, 0); }
 `;
 
 const GlobalStyle = createGlobalStyle`
-
-
-  *, *::before, *::after {
-    box-sizing: border-box;
-  }
-
+  *, *::before, *::after { box-sizing: border-box; }
   body {
     margin: 0;
     padding: 0;
@@ -40,8 +34,7 @@ const GlobalStyle = createGlobalStyle`
 
 const MainWrapper = styled.div`
   display: grid;
-  grid-template-columns: 1fr 480px; /* minmax removed */
-  align-items: start;
+  grid-template-columns: 1fr 480px;
   gap: 40px;
   max-width: 1200px;
   margin: 0 auto;
@@ -74,9 +67,8 @@ const ImageSection = styled.div`
     width: 100%;
     height: auto;
     border-radius: 40px;
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.1); /* simplified */
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.1);
     animation: ${float} 5s infinite ease-in-out;
-    display: block;
   }
 
   h1 {
@@ -123,8 +115,8 @@ const SectionTitle = styled.h4`
 `;
 
 const StyledSelect = styled.select`
-  width: 100%; /* calc removed */
-  margin: 0 25px;
+  width: calc(100% - 50px);
+  margin: 0 25px 15px;
   padding: 16px;
   border-radius: 15px;
   border: 2px solid #f1f5f9;
@@ -148,10 +140,7 @@ const BloodButton = styled.button`
   color: ${(props) => (props.active ? "#b71c1c" : "#64748b")};
   font-weight: 900;
   cursor: pointer;
-  transition:
-    background-color 0.2s,
-    border-color 0.2s;
-
+  transition: 0.2s;
   &:hover {
     background: ${(props) => (props.active ? "#fff5f5" : "#e2e8f0")};
   }
@@ -188,7 +177,6 @@ const MainActionButton = styled(motion.button)`
     css`
       animation: ${pulse} 2s infinite;
     `}
-
   &:disabled {
     background: #94a3b8;
   }
@@ -234,7 +222,7 @@ function Emergency() {
       <MainWrapper>
         <ImageSection>
           <div className="img-container">
-            <img src="/assets/blood.png" alt="طلب دم عاجل" />
+            <img src="/assets/blood.png" alt="Daraa Blood Bank" />
           </div>
           <h1>قطرة دم تساوي حياة</h1>
           <p>
@@ -280,7 +268,7 @@ function Emergency() {
               {status === "idle" && (
                 <MainActionButton
                   key="idle"
-                  isIdle={true}
+                  isIdle
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}

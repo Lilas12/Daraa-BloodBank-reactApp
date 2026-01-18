@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import styled, {
-  createGlobalStyle,
   ThemeProvider,
+  createGlobalStyle,
   keyframes,
   css,
 } from "styled-components";
@@ -17,23 +17,6 @@ import {
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
-const theme = {
-  colors: {
-    primaryNavy: "#1a237e",
-    medicalTeal: "#00bcd4",
-    medicalGreen: "#4caf50",
-    emergencyRed: "#f44336",
-    bgWhite: "#f8fafc",
-    cardBg: "#ffffff",
-    border: "#e2e8f0",
-    textDark: "#003049",
-  },
-  breakpoints: {
-    mobile: "480px",
-    tablet: "900px",
-  },
-};
-
 const floating = keyframes`
   0% { transform: translateY(0px) rotate(0deg); }
   50% { transform: translateY(-20px) rotate(1deg); }
@@ -46,11 +29,13 @@ const spin = keyframes`
 `;
 
 const GlobalStyle = createGlobalStyle`
+  *, *::before, *::after { box-sizing: border-box; }
   body {
-    margin: 0; padding: 0;
+    margin: 0;
+    padding: 0;
     font-family: 'Cairo', sans-serif;
+    background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
     direction: rtl;
-     background-color: #f8fafc;
     color: #003049;
     min-height: 100vh;
   }
@@ -66,7 +51,7 @@ const MainLayout = styled.div`
   max-width: 1300px;
   margin: 0 auto;
 
-  @media (max-width: ${(props) => props.theme.breakpoints.tablet}) {
+  @media (max-width: 900px) {
     flex-direction: column;
     padding-top: 20px;
   }
@@ -82,6 +67,7 @@ const ImageSection = styled(motion.div)`
   .image-container {
     animation: ${floating} 5s ease-in-out infinite;
     position: relative;
+
     img {
       width: 100%;
       max-width: 550px;
@@ -90,6 +76,7 @@ const ImageSection = styled(motion.div)`
       box-shadow: 0 30px 60px rgba(26, 35, 126, 0.2);
       border: 10px solid white;
     }
+
     &::before {
       content: "";
       position: absolute;
@@ -112,6 +99,8 @@ const ImageSection = styled(motion.div)`
       color: #1a237e;
       font-weight: 900;
       font-size: 2.5rem;
+      margin: 0;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     }
     p {
       color: #475569;
@@ -125,7 +114,6 @@ const ImageSection = styled(motion.div)`
 
 const Card = styled(motion.div)`
   flex: 1;
-  width: 100%;
   max-width: 500px;
   background: white;
   border-radius: 35px;
@@ -135,7 +123,7 @@ const Card = styled(motion.div)`
 `;
 
 const Header = styled.div`
-  background: ${(props) => props.theme.colors.primaryNavy};
+  background: #1a237e;
   color: white;
   padding: 35px 25px;
   text-align: center;
@@ -148,7 +136,7 @@ const Header = styled.div`
     left: 0;
     width: 100%;
     height: 5px;
-    background: ${(props) => props.theme.colors.medicalTeal};
+    background: #00bcd4;
   }
 
   h2 {
@@ -168,6 +156,7 @@ const FormGrid = styled.div`
   grid-template-columns: 1fr 1fr;
   gap: 20px;
   padding: 30px;
+
   @media (max-width: 500px) {
     grid-template-columns: 1fr;
   }
@@ -193,6 +182,7 @@ const InputWrapper = styled.div`
   position: relative;
   display: flex;
   align-items: center;
+
   svg {
     position: absolute;
     right: 15px;
@@ -200,8 +190,9 @@ const InputWrapper = styled.div`
     z-index: 2;
     transition: 0.3s;
   }
+
   &:focus-within svg {
-    color: ${(props) => props.theme.colors.medicalTeal};
+    color: #00bcd4;
   }
 `;
 
@@ -214,30 +205,12 @@ const InputField = styled.input`
   font-size: 1rem;
   background: #f8fafc;
   transition: all 0.3s;
-  &:focus {
-    outline: none;
-    border-color: ${(props) => props.theme.colors.medicalTeal};
-    background: white;
-    box-shadow: 0 0 10px rgba(0, 188, 212, 0.1);
-  }
-`;
 
-// --- Fixad select ---
-const SelectField = styled.select`
-  width: 100%;
-  padding: 14px 15px;
-  border-radius: 16px;
-  border: 2px solid #f1f5f9;
-  background: #f8fafc;
-  font-family: "Cairo";
-  font-size: 1rem;
-  color: #003049;
-  appearance: none;
   &:focus {
     outline: none;
-    border-color: ${(props) => props.theme.colors.medicalTeal};
+    border-color: #00bcd4;
     background: white;
-    box-shadow: 0 0 10px rgba(0, 188, 212, 0.1);
+    box-shadow: 0 0 0 4px rgba(0, 188, 212, 0.1);
   }
 `;
 
@@ -247,22 +220,22 @@ const SubmitButton = styled(motion.button)`
   padding: 20px;
   background: ${(props) =>
     props.$status === "success"
-      ? props.theme.colors.medicalGreen
+      ? "#4caf50"
       : props.$status === "sending"
-        ? props.theme.colors.medicalTeal
-        : props.theme.colors.primaryNavy};
+        ? "#00bcd4"
+        : "#1a237e"};
   color: white;
   border: none;
   border-radius: 20px;
   font-size: 1.2rem;
   font-weight: 800;
-  font-family: "Cairo";
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
   box-shadow: 0 10px 20px rgba(26, 35, 126, 0.2);
+
   .spinner-icon {
     ${(props) =>
       props.$status === "sending" &&
@@ -302,7 +275,9 @@ function RequestBlood() {
   };
 
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider
+      theme={{ colors: { primaryNavy: "#1a237e", medicalTeal: "#00bcd4" } }}
+    >
       <GlobalStyle />
       <MainLayout>
         <ImageSection
@@ -358,7 +333,8 @@ function RequestBlood() {
                 </Label>
                 <InputWrapper>
                   <FaMapMarkerAlt />
-                  <SelectField
+                  <InputField
+                    as="select"
                     required
                     value={formData.area}
                     onChange={(e) =>
@@ -371,7 +347,7 @@ function RequestBlood() {
                         {area}
                       </option>
                     ))}
-                  </SelectField>
+                  </InputField>
                 </InputWrapper>
               </FormGroup>
 
@@ -381,7 +357,8 @@ function RequestBlood() {
                 </Label>
                 <InputWrapper>
                   <FaTint />
-                  <SelectField
+                  <InputField
+                    as="select"
                     required
                     value={formData.bloodType}
                     onChange={(e) =>
@@ -396,7 +373,7 @@ function RequestBlood() {
                         </option>
                       ),
                     )}
-                  </SelectField>
+                  </InputField>
                 </InputWrapper>
               </FormGroup>
 
