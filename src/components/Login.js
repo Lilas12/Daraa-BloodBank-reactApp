@@ -25,9 +25,6 @@ import {
   browserSessionPersistence,
 } from "firebase/auth";
 
-/* =======================
-   TEMAN & ANIMERINGAR
-======================= */
 const theme = {
   colors: {
     teal: "#00bcd4",
@@ -54,9 +51,6 @@ const GlobalStyles = createGlobalStyle`
   }
 `;
 
-/* =======================
-   STYLED COMPONENTS
-======================= */
 const Container = styled.div`
   min-height: 100vh;
   display: flex;
