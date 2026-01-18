@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import styled, { createGlobalStyle } from "styled-components";
 
-// Global styles to define CSS variables
 const GlobalStyle = createGlobalStyle`
   :root {
     --color-primary: #c1121f;
@@ -49,7 +48,7 @@ const TableBody = styled.tbody``;
 
 const TableRow = styled.tr`
   &:nth-child(even) {
-    background-color: #f2f2f2; /* Keep a subtle alternate for readability, or adjust to var(--color-bg) with opacity */
+    background-color: #f2f2f2;
   }
 `;
 
@@ -131,13 +130,13 @@ function ManageInventory() {
   const addBloodType = () => {
     if (newQuantity < 0) return;
     const existingIndex = inventory.findIndex(
-      (item) => item.bloodType === newBloodType
+      (item) => item.bloodType === newBloodType,
     );
     if (existingIndex !== -1) {
       // Update existing
       updateQuantity(
         existingIndex,
-        inventory[existingIndex].quantity + newQuantity
+        inventory[existingIndex].quantity + newQuantity,
       );
     } else {
       // Add new

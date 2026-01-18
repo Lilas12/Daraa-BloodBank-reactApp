@@ -47,15 +47,16 @@ const spin = keyframes`
 `;
 
 const GlobalStyle = createGlobalStyle`
-  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
   body {
-    margin: 0; padding: 0;
+    margin: 0;
+    padding: 0;
     background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
     font-family: 'Cairo', sans-serif;
     direction: rtl;
     color: ${(props) => props.theme.colors.textDark};
     min-height: 100vh;
   }
+
 `;
 
 const MainLayout = styled.div`
