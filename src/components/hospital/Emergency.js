@@ -27,14 +27,13 @@ const pulse = keyframes`
 `;
 
 const GlobalStyle = createGlobalStyle`
-  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
-
   *, *::before, *::after {
-    box-sizing: border-box; /* Hindrar border-ändringar från att flytta layouten */
+    box-sizing: border-box;
   }
 
   body {
-    margin: 0; padding: 0;
+    margin: 0;
+    padding: 0;
     font-family: 'Cairo', sans-serif;
     background: #f8fafc;
     direction: rtl;
