@@ -1,4 +1,4 @@
-src/AppLayout.css .app-container {
+.app-container {
   display: flex;
   min-height: 100vh;
   direction: rtl; /* Stöd för arabiska */
