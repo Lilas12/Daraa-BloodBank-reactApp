@@ -175,13 +175,13 @@ const Footer = () => {
                 وإنقاذ حياة المرضى.
               </p>
               <SocialMedia>
-                <a href="#">
+                <a href="/">
                   <FaFacebook />
                 </a>
-                <a href="#">
+                <a href="/">
                   <FaWhatsapp />
                 </a>
-                <a href="#">
+                <a href="/">
                   <FaTelegram />
                 </a>
               </SocialMedia>

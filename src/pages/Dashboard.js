@@ -271,7 +271,7 @@ const DashboardPro = () => {
                   <strong>{hero.name}</strong>
                   <span>آخر تبرع: {hero.last}</span>
                 </div>
-                <a href="#" className="call-btn">
+                <a href="/" className="call-btn">
                   <FaPhone />
                 </a>
               </div>
