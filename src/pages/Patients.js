@@ -103,7 +103,6 @@ const StatusBadge = styled.span`
   color: ${(p) => (p.status === "حرج" ? "#ef4444" : "#16a34a")};
 `;
 
-// --- Huvudkomponenten ---
 export default function PatientDashboard() {
   const [tab, setTab] = useState("patients");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -240,7 +239,6 @@ export default function PatientDashboard() {
           </motion.div>
         )}
 
-        {/* FLIK: MÖTEN */}
         {tab === "appointments" && (
           <motion.div key="a" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <h2>جدول المواعيد اليومية</h2>
@@ -268,7 +266,6 @@ export default function PatientDashboard() {
           </motion.div>
         )}
 
-        {/* FLIK: STATISTIK */}
         {tab === "stats" && (
           <motion.div key="s" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <div

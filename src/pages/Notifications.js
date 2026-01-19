@@ -109,19 +109,17 @@ const NumberInput = styled.input`
 `;
 
 function ManageInventory() {
-  // بيانات وهمية للمخزون (Fake inventory data)
   const [inventory, setInventory] = useState([
     { bloodType: "A+", quantity: 50 },
     { bloodType: "B+", quantity: 30 },
     { bloodType: "O+", quantity: 70 },
   ]);
 
-  // State for adding new blood type
   const [newBloodType, setNewBloodType] = useState("A-");
   const [newQuantity, setNewQuantity] = useState(0);
 
   const updateQuantity = (index, newQuantity) => {
-    if (newQuantity < 0) return; // Prevent negative quantities
+    if (newQuantity < 0) return;
     const updatedInventory = [...inventory];
     updatedInventory[index].quantity = newQuantity;
     setInventory(updatedInventory);
@@ -133,13 +131,11 @@ function ManageInventory() {
       (item) => item.bloodType === newBloodType,
     );
     if (existingIndex !== -1) {
-      // Update existing
       updateQuantity(
         existingIndex,
         inventory[existingIndex].quantity + newQuantity,
       );
     } else {
-      // Add new
       setInventory([
         ...inventory,
         { bloodType: newBloodType, quantity: newQuantity },

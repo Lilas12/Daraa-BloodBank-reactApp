@@ -5,14 +5,12 @@ import {
   FaDroplet,
   FaUserPlus,
   FaBell,
-  FaFileMedical,
   FaArrowTrendUp,
   FaArrowTrendDown,
   FaPlus,
   FaPhone,
   FaClock,
   FaTriangleExclamation,
-  FaCircleCheck,
   FaTruckFast,
 } from "react-icons/fa6";
 import {
@@ -20,12 +18,10 @@ import {
   AreaChart,
   Area,
   XAxis,
-  YAxis,
   Tooltip,
   CartesianGrid,
 } from "recharts";
 
-// --- Animeringar ---
 const pulse = keyframes`
   0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
   70% { box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
@@ -80,7 +76,6 @@ const DashboardPro = () => {
         </HeaderActions>
       </HeaderSection>
 
-      {/* 2. STATS GRID */}
       <StatsGrid>
         <StatCard color="#2563eb">
           <div className="icon">
@@ -122,9 +117,7 @@ const DashboardPro = () => {
         </StatCard>
       </StatsGrid>
 
-      {/* 3. MAIN CONTENT GRID */}
       <LayoutGrid>
-        {/* Graph Section */}
         <Card sectionTitle="معدل استهلاك الوحدات (أسبوعي)">
           <ChartContainer>
             <ResponsiveContainer width="100%" height={250}>
@@ -224,7 +217,6 @@ const DashboardPro = () => {
           <ViewAllLink>عرض سجل الصلاحية الكامل ←</ViewAllLink>
         </Card>
 
-        {/* Blood Inventory Status */}
         <Card sectionTitle="حالة المخزون حسب الفصيلة">
           <BloodList>
             {[
@@ -257,7 +249,6 @@ const DashboardPro = () => {
           </BloodList>
         </Card>
 
-        {/* Quick Contact Heroes */}
         <Card sectionTitle="متبرعون جاهزون للاستجابة">
           <HeroList>
             {[
@@ -289,7 +280,6 @@ const DashboardPro = () => {
         </Card>
       </LayoutGrid>
 
-      {/* Floating Actions */}
       <FloatingActions>
         <ActionButton
           className="primary"
@@ -309,8 +299,6 @@ const DashboardPro = () => {
     </MainContainer>
   );
 };
-
-// --- STYLED COMPONENTS ---
 
 const MainContainer = styled.div`
   padding: 40px;
@@ -495,7 +483,6 @@ const Card = ({ children, sectionTitle }) => (
   </CardWrapper>
 );
 
-/* EXPIRY MODULE STYLES */
 const ExpiryList = styled.div`
   display: flex;
   flex-direction: column;
