@@ -245,7 +245,7 @@ const SubmitButton = styled(motion.button)`
   }
 `;
 
-function RequestBlood() {
+function HosRequestBlood() {
   const [formData, setFormData] = useState({
     patientName: "",
     bloodType: "",
@@ -445,4 +445,4 @@ function RequestBlood() {
   );
 }
 
-export default RequestBlood;
+export default HosRequestBlood;

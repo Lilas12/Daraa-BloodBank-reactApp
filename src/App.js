@@ -4,18 +4,18 @@ import { auth } from "./firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 
 import "./AppLayout.css";
-import Navbar from "./components/layout/Navbar"; // Din nya Navbar med ikoner
-import Dashboard from "./pages/Dashboard";
-import Patients from "./pages/Patients";
-import Settings from "./pages/Settings";
-import Statistics from "./pages/Statistics";
-import Notifications from "./pages/Notifications";
-import InventoryPage from "./pages/InventoryPage";
+import Navbar from "./components/layout/HosNavbar"; // Din nya Navbar med ikoner
+import Dashboard from "./pages/HospitalDashboard";
+import Patients from "./pages/HosPatients";
+import Settings from "./pages/HosSettings";
+import Statistics from "./pages/HosStatistics";
+import Notifications from "./pages/HosNotifications";
+import InventoryPage from "./pages/HosInventoryPage";
 import BloodShopPage from "./pages/BloodShopPage";
-import RequestBlood from "./components/hospital/RequestBlood";
-import Emergency from "./components/hospital/Emergency";
-import Login from "./components/Login";
-import Footer from "./components/Footer";
+import RequestBlood from "./components/hospital/HosRequestBlood";
+import Emergency from "./components/hospital/HosEmergency";
+import Login from "./components/HosLogin";
+import Footer from "./components/HosFooter";
 
 function App() {
   const [user, setUser] = useState(null);

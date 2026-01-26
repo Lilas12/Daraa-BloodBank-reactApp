@@ -182,7 +182,7 @@ const MainActionButton = styled(motion.button)`
   }
 `;
 
-function Emergency() {
+function HosEmergency() {
   const [selectedGroup, setSelectedGroup] = useState("O-");
   const [status, setStatus] = useState("idle");
   const audioPlayer = useRef(null);
@@ -306,4 +306,4 @@ function Emergency() {
   );
 }
 
-export default Emergency;
+export default HosEmergency;

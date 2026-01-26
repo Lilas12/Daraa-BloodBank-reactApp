@@ -28,7 +28,7 @@ const pulse = keyframes`
   100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
 `;
 
-const DashboardPro = () => {
+const HospitalDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -702,4 +702,4 @@ const ChartContainer = styled.div`
 `;
 const BloodList = styled.div``;
 
-export default DashboardPro;
+export default HospitalDashboard;

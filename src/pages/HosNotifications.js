@@ -108,7 +108,7 @@ const NumberInput = styled.input`
   background-color: var(--color-bg);
 `;
 
-function ManageInventory() {
+function HosNotifications() {
   const [inventory, setInventory] = useState([
     { bloodType: "A+", quantity: 50 },
     { bloodType: "B+", quantity: 30 },
@@ -222,4 +222,4 @@ function ManageInventory() {
   );
 }
 
-export default ManageInventory;
+export default HosNotifications;
