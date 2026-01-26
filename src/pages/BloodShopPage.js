@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import styled, { keyframes } from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
@@ -11,10 +11,8 @@ import {
   FaHospital,
   FaCheckCircle,
   FaNotesMedical,
-  FaTimes,
 } from "react-icons/fa";
 
-// --- Animationer ---
 const floatBG = keyframes`
   0% { transform: translate(0, 0) scale(1); }
   50% { transform: translate(3%, 5%) scale(1.05); }
