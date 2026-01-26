@@ -167,11 +167,14 @@ const Navbar = ({ onLogout }) => {
     { name: "مخزون الدم", to: "/inventory", icon: <FaWarehouse /> },
     { name: "المرضى", to: "/patients", icon: <FaUserInjured /> },
     { name: "طلبات الدم", to: "/request-blood", icon: <FaFileMedical /> },
+
+    // ÄNDRA DENNA RAD SÅ ATT 'to' MATCHAR ROUTEN I APP.JS
+    { name: "شراء دم", to: "/blood-orders", icon: <FaTint /> },
+
     { name: "الإحصائيات", to: "/statistics", icon: <FaChartBar /> },
     { name: "الطوارئ", to: "/emergency", icon: <FaExclamationTriangle /> },
     { name: "الإعدادات", to: "/settings", icon: <FaCog /> },
   ];
-
   return (
     <NavContainer>
       <RightSection>

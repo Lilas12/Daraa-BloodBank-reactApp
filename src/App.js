@@ -11,6 +11,7 @@ import Settings from "./pages/Settings";
 import Statistics from "./pages/Statistics";
 import Notifications from "./pages/Notifications";
 import InventoryPage from "./pages/InventoryPage";
+import BloodShopPage from "./pages/BloodShopPage";
 import RequestBlood from "./components/hospital/RequestBlood";
 import Emergency from "./components/hospital/Emergency";
 import Login from "./components/Login";
@@ -64,6 +65,7 @@ function App() {
               <Route path="/patients" element={<Patients />} />
               <Route path="/request-blood" element={<RequestBlood />} />
               <Route path="/emergency" element={<Emergency />} />
+              <Route path="/blood-orders" element={<BloodShopPage />} />
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </main>
