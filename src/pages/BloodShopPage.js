@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import styled, { keyframes } from "styled-components";
+import styled, { createGlobalStyle } from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import {
@@ -10,185 +10,148 @@ import {
   FaTrash,
   FaHospital,
   FaCheckCircle,
-  FaNotesMedical,
+  FaPrint,
+  FaFileInvoice,
+  FaArrowRight,
+  FaReceipt,
 } from "react-icons/fa";
 
-const floatBG = keyframes`
-  0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(3%, 5%) scale(1.05); }
-  100% { transform: translate(-2%, -3%) scale(1); }
+// --- Globala Inställningar ---
+const GlobalStyle = createGlobalStyle`
+  body {
+    margin: 0;
+    padding: 0;
+    background: #f0f2f5;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    overflow-x: hidden;
+  }
+  @media print {
+    body * { visibility: hidden; }
+    #printable-invoice, #printable-invoice * { visibility: visible; }
+    #printable-invoice { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
+  }
 `;
 
-// --- Styled Components ---
-const PageWrapper = styled.div`
+const AppContainer = styled.div`
   min-height: 100vh;
-  background-color: #f8fafc;
-  position: relative;
-  overflow: hidden;
-  color: #1e293b;
-  padding: 40px 20px;
+  padding: 20px;
   direction: rtl;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-
-  &::before,
-  &::after {
-    content: "";
-    position: absolute;
-    width: 700px;
-    height: 700px;
-    border-radius: 50%;
-    filter: blur(100px);
-    z-index: 0;
-    opacity: 0.3;
-    animation: ${floatBG} 15s infinite alternate ease-in-out;
-  }
-  &::before {
-    background: #e0f2fe;
-    top: -150px;
-    left: -150px;
-  }
-  &::after {
-    background: #fee2e2;
-    bottom: -150px;
-    right: -150px;
-  }
 `;
 
-const ContentLayer = styled.div`
-  position: relative;
-  z-index: 1;
-  max-width: 1250px;
-  margin: 0 auto;
-`;
-
-const SuccessOverlay = styled(motion.div)`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(15, 23, 42, 0.8);
-  backdrop-filter: blur(8px);
+// --- Layout Komponenter ---
+const GlassHeader = styled.header`
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  padding: 20px 40px;
+  border-radius: 20px;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  z-index: 1000;
+  margin-bottom: 30px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 `;
 
-const SuccessModal = styled(motion.div)`
-  background: white;
-  padding: 50px;
-  border-radius: 40px;
-  text-align: center;
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
-  max-width: 450px;
-  width: 90%;
-`;
-
-const BloodCard = styled(motion.div)`
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(15px);
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  border-radius: 28px;
-  padding: 30px;
-  text-align: center;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
-  &:hover {
-    border-color: #ef4444;
-    background: white;
+const MainGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 25px;
+  max-width: 1300px;
+  margin: 0 auto;
+  @media (max-width: 1000px) {
+    grid-template-columns: 1fr;
   }
 `;
 
-const CartSidebar = styled(motion.div)`
+const Card = styled(motion.div)`
   background: white;
-  border-radius: 32px;
+  border-radius: 24px;
   padding: 30px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.06);
-  border: 1px solid #f1f5f9;
-  height: fit-content;
-  position: sticky;
-  top: 30px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.02);
+  border: 1px solid #edf2f7;
+`;
+
+const BloodItem = styled(Card)`
+  text-align: center;
+  transition: all 0.3s ease;
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(239, 68, 68, 0.1);
+  }
+`;
+
+const PriceCircle = styled.div`
+  background: #fff5f5;
+  color: #e53e3e;
+  width: fit-content;
+  padding: 8px 20px;
+  border-radius: 50px;
+  margin: 15px auto;
+  font-weight: 800;
+  font-size: 1.1rem;
 `;
 
 const ActionButton = styled(motion.button)`
   width: 100%;
-  padding: 16px;
-  border-radius: 16px;
+  padding: 15px;
+  border-radius: 15px;
   border: none;
-  font-weight: 800;
+  font-size: 1rem;
+  font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  background: ${(props) => (props.$primary ? "#ef4444" : "#f1f5f9")};
-  color: ${(props) => (props.$primary ? "white" : "#1e293b")};
+  background: ${(props) =>
+    props.$primary
+      ? "linear-gradient(135deg, #e53e3e 0%, #b91c1c 100%)"
+      : "#f7fafc"};
+  color: ${(props) => (props.$primary ? "white" : "#4a5568")};
+  box-shadow: ${(props) =>
+    props.$primary ? "0 4px 12px rgba(229, 62, 62, 0.3)" : "none"};
 `;
 
-const QtyBtn = styled.button`
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  border: none;
-  background: #f1f5f9;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  &:hover {
-    background: #e2e8f0;
+const StyledInput = styled.input`
+  width: 100%;
+  padding: 16px;
+  margin-bottom: 15px;
+  border-radius: 12px;
+  border: 2px solid #edf2f7;
+  background: #f8fafc;
+  box-sizing: border-box;
+  font-size: 1rem;
+  &:focus {
+    outline: none;
+    border-color: #e53e3e;
+    background: white;
   }
 `;
 
-// --- Komponent ---
+// --- Huvudkomponent ---
 const BloodShopPage = () => {
   const [cart, setCart] = useState([]);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [step, setStep] = useState("shop");
+  const [formData, setFormData] = useState({
+    hospital: "",
+    doctor: "",
+    notes: "",
+  });
 
   const popAudio = useRef(
-    new Audio("https://www.soundjay.com/buttons/sounds/button-16.mp3"),
+    new Audio(
+      "https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3",
+    ),
   );
-  const successAudio = useRef(
-    new Audio("https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3"),
+  const cashAudio = useRef(
+    new Audio(
+      "https://assets.mixkit.co/active_storage/sfx/2017/2017-preview.mp3",
+    ),
   );
 
-  const addToCart = (item) => {
-    popAudio.current.currentTime = 0;
-    popAudio.current.play().catch(() => {});
-    setCart((prev) => {
-      const exists = prev.find((i) => i.id === item.id);
-      if (exists)
-        return prev.map((i) =>
-          i.id === item.id ? { ...i, qty: i.qty + 1 } : i,
-        );
-      return [...prev, { ...item, qty: 1 }];
-    });
-  };
-
-  const decreaseQty = (id) => {
-    popAudio.current.currentTime = 0;
-    popAudio.current.play().catch(() => {});
-    setCart((prev) => {
-      const item = prev.find((i) => i.id === id);
-      if (item && item.qty > 1)
-        return prev.map((i) => (i.id === id ? { ...i, qty: i.qty - 1 } : i));
-      return prev.filter((i) => i.id !== id);
-    });
-  };
-
-  const removeItem = (id) => {
-    setCart((prev) => prev.filter((i) => i.id !== id));
-  };
-
-  const handleCheckout = () => {
-    successAudio.current.play();
-    setShowSuccess(true);
-    confetti({
-      particleCount: 250,
-      spread: 80,
-      origin: { y: 0.6 },
-      colors: ["#ef4444", "#ffffff", "#22c55e"],
-    });
+  const playSound = (ref) => {
+    ref.current.currentTime = 0;
+    ref.current.play().catch(() => {});
   };
 
   const bloodTypes = [
@@ -200,244 +163,378 @@ const BloodShopPage = () => {
     { id: 6, type: "A-", price: 22000 },
   ];
 
-  const total = cart.reduce((acc, item) => acc + item.price * item.qty, 0);
+  const addToCart = (item) => {
+    playSound(popAudio);
+    setCart((prev) => {
+      const exists = prev.find((i) => i.id === item.id);
+      return exists
+        ? prev.map((i) => (i.id === item.id ? { ...i, qty: i.qty + 1 } : i))
+        : [...prev, { ...item, qty: 1 }];
+    });
+  };
+
+  const removeFromCart = (id) =>
+    setCart((prev) => prev.filter((i) => i.id !== id));
+
+  const handleFinish = () => {
+    if (!formData.hospital || !formData.doctor)
+      return alert("الرجاء إدخال البيانات المطلوبة");
+    playSound(cashAudio);
+    confetti({
+      particleCount: 150,
+      spread: 80,
+      colors: ["#e53e3e", "#ffffff"],
+    });
+    setStep("success");
+  };
+
+  const total = cart.reduce((acc, i) => acc + i.price * i.qty, 0);
 
   return (
-    <PageWrapper>
-      <AnimatePresence>
-        {showSuccess && (
-          <SuccessOverlay
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+    <AppContainer>
+      <GlobalStyle />
+
+      <GlassHeader className="no-print">
+        <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+          <div
+            style={{
+              background: "#e53e3e",
+              padding: "10px",
+              borderRadius: "12px",
+            }}
+          >
+            <FaHospital color="white" size={24} />
+          </div>
+          <h1 style={{ margin: 0, fontSize: "22px", fontWeight: 900 }}>
+            نظام حوران <span style={{ color: "#e53e3e" }}>الرقمي</span>
+          </h1>
+        </div>
+        <div style={{ fontWeight: 600, color: "#718096" }}>
+          بنك الدم المركزي
+        </div>
+      </GlassHeader>
+
+      <AnimatePresence mode="wait">
+        {step === "shop" && (
+          <motion.div
+            key="shop"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
           >
-            <SuccessModal
-              initial={{ scale: 0.5 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.5 }}
-            >
-              <motion.div
-                animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{ repeat: Infinity, duration: 2 }}
-              >
-                <FaCheckCircle size={80} color="#22c55e" />
-              </motion.div>
-              <h2 style={{ fontSize: "2.2rem", marginTop: "20px" }}>
-                تم تأكيد الطلب!
-              </h2>
-              <p
+            <MainGrid>
+              <div
                 style={{
-                  color: "#64748b",
-                  margin: "15px 0 30px",
-                  fontSize: "1.1rem",
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+                  gap: "20px",
                 }}
               >
-                شكراً لثقتكم. تم إرسال طلبكم إلى بنك الدم المركزي في درعا بنجاح.
-              </p>
-              <ActionButton
-                $primary
-                onClick={() => {
-                  setShowSuccess(false);
-                  setCart([]);
-                }}
-              >
-                إغلاق والعودة للمتجر
-              </ActionButton>
-            </SuccessModal>
-          </SuccessOverlay>
-        )}
-      </AnimatePresence>
+                {bloodTypes.map((blood) => (
+                  <BloodItem key={blood.id}>
+                    <FaTint size={40} color="#e53e3e" />
+                    <h2 style={{ margin: "10px 0" }}>فصيلة {blood.type}</h2>
+                    <PriceCircle>
+                      {blood.price.toLocaleString()} ل.س
+                    </PriceCircle>
+                    <ActionButton
+                      $primary
+                      onClick={() => addToCart(blood)}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <FaPlus /> إضافة للطلب
+                    </ActionButton>
+                  </BloodItem>
+                ))}
+              </div>
 
-      <ContentLayer>
-        <header style={{ textAlign: "right", marginBottom: "50px" }}>
-          <h1
-            style={{
-              fontSize: "3rem",
-              fontWeight: "900",
-              display: "flex",
-              alignItems: "center",
-              gap: "20px",
-            }}
-          >
-            نظام <span style={{ color: "#ef4444" }}>حوران</span> الرقمي{" "}
-            <FaHospital color="#ef4444" />
-          </h1>
-          <p
-            style={{
-              color: "#64748b",
-              fontSize: "1.2rem",
-              paddingRight: "15px",
-              borderRight: "5px solid #ef4444",
-            }}
-          >
-            لإدارة التزويد الدموي | بنك الدم المركزي بدرعا
-          </p>
-        </header>
-
-        <div
-          style={{ display: "grid", gridTemplateColumns: "1fr", gap: "30px" }}
-        >
-          <div
-            style={{ display: "grid", gridTemplateColumns: "1fr", gap: "20px" }}
-          >
-            {/* Grid med blodtyper */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-                gap: "20px",
-              }}
-            >
-              {bloodTypes.map((blood) => (
-                <BloodCard key={blood.id} whileHover={{ y: -10 }}>
-                  <FaTint
-                    size={50}
-                    color="#ef4444"
-                    style={{ marginBottom: "15px" }}
-                  />
-                  <h2 style={{ fontSize: "2rem" }}>{blood.type}</h2>
-                  <div
-                    style={{
-                      fontSize: "1.5rem",
-                      fontWeight: "900",
-                      color: "#ef4444",
-                      margin: "15px 0",
-                    }}
-                  >
-                    {blood.price.toLocaleString()} ليرة
-                  </div>
-                  <ActionButton
-                    $primary
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => addToCart(blood)}
-                  >
-                    <FaPlus /> إضافة للطلب
-                  </ActionButton>
-                </BloodCard>
-              ))}
-            </div>
-          </div>
-
-          {/* Varukorg Sidebar */}
-          <CartSidebar
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-          >
-            <h3
-              style={{
-                fontSize: "1.6rem",
-                marginBottom: "25px",
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-              }}
-            >
-              <FaShoppingCart color="#ef4444" /> قائمة الطلبيات
-            </h3>
-
-            <AnimatePresence mode="popLayout">
-              {cart.length === 0 ? (
-                <div
+              <Card style={{ height: "fit-content" }}>
+                <h3
                   style={{
-                    textAlign: "center",
-                    color: "#94a3b8",
-                    padding: "40px 0",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                    marginTop: 0,
                   }}
                 >
-                  <FaNotesMedical
-                    size={40}
-                    style={{ opacity: 0.2, marginBottom: "10px" }}
-                  />
-                  <p>السلة فارغة حالياً</p>
-                </div>
-              ) : (
-                cart.map((item) => (
-                  <motion.div
-                    key={item.id}
-                    layout
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      padding: "15px 0",
-                      borderBottom: "1px solid #f1f5f9",
-                    }}
-                  >
-                    <div>
-                      <div style={{ fontWeight: "800" }}>{item.type}</div>
-                      <div style={{ color: "#ef4444", fontSize: "0.9rem" }}>
-                        {(item.price * item.qty).toLocaleString()} ليرة
+                  <FaShoppingCart color="#e53e3e" /> سلة التوريد
+                </h3>
+                {cart.length === 0 ? (
+                  <p style={{ color: "#a0aec0", textAlign: "center" }}>
+                    السلة فارغة حالياً
+                  </p>
+                ) : (
+                  <>
+                    {cart.map((item) => (
+                      <div
+                        key={item.id}
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          padding: "15px 0",
+                          borderBottom: "1px solid #f7fafc",
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontWeight: 700 }}>{item.type}</div>
+                          <div style={{ fontSize: "12px", color: "#e53e3e" }}>
+                            {item.qty} وحدة
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "10px",
+                          }}
+                        >
+                          <span style={{ fontWeight: 800 }}>
+                            {(item.price * item.qty).toLocaleString()}
+                          </span>
+                          <FaTrash
+                            color="#cbd5e1"
+                            cursor="pointer"
+                            onClick={() => removeFromCart(item.id)}
+                          />
+                        </div>
                       </div>
-                    </div>
-
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "10px",
-                      }}
-                    >
+                    ))}
+                    <div style={{ marginTop: "30px" }}>
                       <div
                         style={{
                           display: "flex",
-                          alignItems: "center",
-                          gap: "8px",
-                          background: "#f8fafc",
-                          padding: "5px",
-                          borderRadius: "10px",
+                          justifyContent: "space-between",
+                          fontSize: "1.4rem",
+                          fontWeight: 900,
+                          marginBottom: "20px",
                         }}
                       >
-                        <QtyBtn onClick={() => decreaseQty(item.id)}>
-                          <FaMinus size={10} />
-                        </QtyBtn>
-                        <span style={{ minWidth: "20px", textAlign: "center" }}>
-                          {item.qty}
+                        <span>الإجمالي:</span>
+                        <span style={{ color: "#e53e3e" }}>
+                          {total.toLocaleString()}
                         </span>
-                        <QtyBtn onClick={() => addToCart(item)}>
-                          <FaPlus size={10} />
-                        </QtyBtn>
                       </div>
-                      <FaTrash
-                        color="#cbd5e1"
-                        style={{ cursor: "pointer" }}
-                        onClick={() => removeItem(item.id)}
-                      />
+                      <ActionButton $primary onClick={() => setStep("form")}>
+                        متابعة الطلب <FaArrowRight />
+                      </ActionButton>
                     </div>
-                  </motion.div>
-                ))
-              )}
-            </AnimatePresence>
+                  </>
+                )}
+              </Card>
+            </MainGrid>
+          </motion.div>
+        )}
 
-            {cart.length > 0 && (
-              <div style={{ marginTop: "25px" }}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    fontSize: "1.4rem",
-                    fontWeight: "900",
-                    marginBottom: "20px",
-                  }}
-                >
-                  <span>الإجمالي:</span>
-                  <span>{total.toLocaleString()} ليرة</span>
-                </div>
-                <ActionButton
-                  $primary
-                  whileHover={{ scale: 1.02 }}
-                  onClick={handleCheckout}
-                >
-                  <FaCheckCircle /> تأكيد وإرسال الطلب
+        {step === "form" && (
+          <motion.div
+            key="form"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+          >
+            <Card style={{ maxWidth: "500px", margin: "40px auto" }}>
+              <h2 style={{ textAlign: "center" }}>
+                <FaFileInvoice color="#e53e3e" /> تأكيد المعلومات
+              </h2>
+              <label>المشفى المستلم</label>
+              <StyledInput
+                placeholder="اسم المشفى الحكومي أو الخاص"
+                onChange={(e) =>
+                  setFormData({ ...formData, hospital: e.target.value })
+                }
+              />
+              <label>الطبيب المسؤول</label>
+              <StyledInput
+                placeholder="اسم الطبيب الكامل"
+                onChange={(e) =>
+                  setFormData({ ...formData, doctor: e.target.value })
+                }
+              />
+              <label>ملاحظات إضافية</label>
+              <StyledInput
+                as="textarea"
+                rows="3"
+                placeholder="ملاحظات حول النقل أو التخزين"
+                onChange={(e) =>
+                  setFormData({ ...formData, notes: e.target.value })
+                }
+              />
+              <div style={{ display: "flex", gap: "10px" }}>
+                <ActionButton $primary onClick={handleFinish}>
+                  إرسال الطلب <FaReceipt />
+                </ActionButton>
+                <ActionButton onClick={() => setStep("shop")}>
+                  رجوع
                 </ActionButton>
               </div>
-            )}
-          </CartSidebar>
-        </div>
-      </ContentLayer>
-    </PageWrapper>
+            </Card>
+          </motion.div>
+        )}
+
+        {step === "success" && (
+          <motion.div
+            key="success"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <div
+              className="no-print"
+              style={{ textAlign: "center", padding: "50px" }}
+            >
+              <FaCheckCircle size={80} color="#48bb78" />
+              <h1 style={{ fontSize: "2.5rem", marginTop: "20px" }}>
+                تم بنجاح!
+              </h1>
+              <p>تم تسجيل طلبية الدم وتوليد الفاتورة الرسمية.</p>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "15px",
+                  justifyContent: "center",
+                  marginTop: "30px",
+                }}
+              >
+                <ActionButton
+                  $primary
+                  onClick={() => window.print()}
+                  style={{ width: "220px" }}
+                >
+                  <FaPrint /> طباعة الفاتورة
+                </ActionButton>
+                <ActionButton
+                  onClick={() => {
+                    setCart([]);
+                    setStep("shop");
+                  }}
+                  style={{ width: "220px" }}
+                >
+                  طلب جديد
+                </ActionButton>
+              </div>
+            </div>
+
+            {/* FAKTURA FÖR UTSKRIFT */}
+            <div
+              id="printable-invoice"
+              style={{
+                display: "none",
+                background: "white",
+                padding: "50px",
+                border: "2px solid #e53e3e",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  borderBottom: "4px solid #e53e3e",
+                  paddingBottom: "20px",
+                  marginBottom: "30px",
+                }}
+              >
+                <div>
+                  <h1 style={{ color: "#e53e3e", margin: 0 }}>
+                    فاتورة توريد دم
+                  </h1>
+                  <p>بنك الدم المركزي - درعا</p>
+                </div>
+                <div style={{ textAlign: "left" }}>
+                  <p>
+                    <strong>الرقم:</strong> #
+                    {Math.floor(Math.random() * 100000)}
+                  </p>
+                  <p>
+                    <strong>التاريخ:</strong>{" "}
+                    {new Date().toLocaleDateString("ar-SY")}
+                  </p>
+                </div>
+              </div>
+              <div
+                style={{
+                  marginBottom: "30px",
+                  background: "#f7fafc",
+                  padding: "20px",
+                  borderRadius: "10px",
+                }}
+              >
+                <p>
+                  <strong>جهة الاستلام:</strong> {formData.hospital}
+                </p>
+                <p>
+                  <strong>الطبيب المستلم:</strong> {formData.doctor}
+                </p>
+              </div>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead style={{ background: "#e53e3e", color: "white" }}>
+                  <tr>
+                    <th
+                      style={{ padding: "15px", border: "1px solid #e53e3e" }}
+                    >
+                      الوصف
+                    </th>
+                    <th
+                      style={{ padding: "15px", border: "1px solid #e53e3e" }}
+                    >
+                      الكمية
+                    </th>
+                    <th
+                      style={{ padding: "15px", border: "1px solid #e53e3e" }}
+                    >
+                      السعر
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cart.map((i) => (
+                    <tr key={i.id}>
+                      <td
+                        style={{ padding: "12px", border: "1px solid #edf2f7" }}
+                      >
+                        وحدة دم ({i.type})
+                      </td>
+                      <td
+                        style={{
+                          padding: "12px",
+                          border: "1px solid #edf2f7",
+                          textAlign: "center",
+                        }}
+                      >
+                        {i.qty}
+                      </td>
+                      <td
+                        style={{ padding: "12px", border: "1px solid #edf2f7" }}
+                      >
+                        {(i.price * i.qty).toLocaleString()} ل.س
+                      </td>
+                    </tr>
+                  ))}
+                  <tr>
+                    <td
+                      colSpan="2"
+                      style={{
+                        padding: "20px",
+                        textAlign: "left",
+                        fontWeight: 900,
+                      }}
+                    >
+                      الإجمالي النهائي:
+                    </td>
+                    <td
+                      style={{
+                        padding: "20px",
+                        color: "#e53e3e",
+                        fontWeight: 900,
+                      }}
+                    >
+                      {total.toLocaleString()} ل.س
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </AppContainer>
   );
 };
 
