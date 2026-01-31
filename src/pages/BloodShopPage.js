@@ -6,7 +6,6 @@ import {
   FaTint,
   FaShoppingCart,
   FaPlus,
-  FaMinus,
   FaTrash,
   FaHospital,
   FaCheckCircle,
