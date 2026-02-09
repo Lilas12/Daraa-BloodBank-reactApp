@@ -3,20 +3,22 @@ import styled, {
   ThemeProvider,
   createGlobalStyle,
   keyframes,
-  css,
 } from "styled-components";
 import {
-  FaUser,
+  FaUserMd,
   FaTint,
   FaLayerGroup,
-  FaMapMarkerAlt,
+  FaHospital,
   FaPaperPlane,
   FaCheckCircle,
   FaHospitalSymbol,
   FaSpinner,
+  FaStethoscope,
+  FaExclamationTriangle,
 } from "react-icons/fa";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
+// --- الأنميشن (Animationer) ---
 const floating = keyframes`
   0% { transform: translateY(0px) rotate(0deg); }
   50% { transform: translateY(-20px) rotate(1deg); }
@@ -29,15 +31,11 @@ const spin = keyframes`
 `;
 
 const GlobalStyle = createGlobalStyle`
-  *, *::before, *::after { box-sizing: border-box; }
   body {
-    margin: 0;
-    padding: 0;
+    margin: 0; padding: 0;
     font-family: 'Cairo', sans-serif;
     background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
     direction: rtl;
-    color: #003049;
-    min-height: 100vh;
   }
 `;
 
@@ -50,7 +48,6 @@ const MainLayout = styled.div`
   gap: 50px;
   max-width: 1300px;
   margin: 0 auto;
-
   @media (max-width: 900px) {
     flex-direction: column;
     padding-top: 20px;
@@ -63,50 +60,26 @@ const ImageSection = styled(motion.div)`
   flex-direction: column;
   align-items: center;
   text-align: center;
-
   .image-container {
     animation: ${floating} 5s ease-in-out infinite;
-    position: relative;
-
     img {
       width: 100%;
       max-width: 550px;
-      height: auto;
       border-radius: 40px;
       box-shadow: 0 30px 60px rgba(26, 35, 126, 0.2);
       border: 10px solid white;
     }
-
-    &::before {
-      content: "";
-      position: absolute;
-      width: 110%;
-      height: 110%;
-      background: radial-gradient(
-        circle,
-        rgba(0, 188, 212, 0.1) 0%,
-        transparent 70%
-      );
-      top: -5%;
-      left: -5%;
-      z-index: -1;
-    }
   }
-
   .text-box {
     margin-top: 35px;
     h1 {
       color: #1a237e;
-      font-weight: 900;
       font-size: 2.5rem;
-      margin: 0;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      margin-bottom: 10px;
     }
     p {
       color: #475569;
       font-size: 1.2rem;
-      margin-top: 15px;
-      max-width: 450px;
       line-height: 1.6;
     }
   }
@@ -120,6 +93,7 @@ const Card = styled(motion.div)`
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
   overflow: hidden;
   border: 1px solid white;
+  scroll-margin-top: 100px; /* Förhindrar att navbaren täcker kortet vid scroll */
 `;
 
 const Header = styled.div`
@@ -128,7 +102,6 @@ const Header = styled.div`
   padding: 35px 25px;
   text-align: center;
   position: relative;
-
   &::after {
     content: "";
     position: absolute;
@@ -138,16 +111,9 @@ const Header = styled.div`
     height: 5px;
     background: #00bcd4;
   }
-
   h2 {
     margin: 10px 0 5px;
     font-size: 1.8rem;
-    font-weight: 900;
-  }
-  p {
-    margin: 0;
-    opacity: 0.8;
-    font-size: 1rem;
   }
 `;
 
@@ -156,7 +122,6 @@ const FormGrid = styled.div`
   grid-template-columns: 1fr 1fr;
   gap: 20px;
   padding: 30px;
-
   @media (max-width: 500px) {
     grid-template-columns: 1fr;
   }
@@ -174,23 +139,20 @@ const Label = styled.label`
   gap: 8px;
   margin-bottom: 8px;
   font-weight: 700;
-  color: #334155;
   font-size: 0.95rem;
+  color: #334155;
 `;
 
 const InputWrapper = styled.div`
   position: relative;
   display: flex;
   align-items: center;
-
   svg {
     position: absolute;
     right: 15px;
     color: #94a3b8;
-    z-index: 2;
     transition: 0.3s;
   }
-
   &:focus-within svg {
     color: #00bcd4;
   }
@@ -202,15 +164,12 @@ const InputField = styled.input`
   border: 2px solid #f1f5f9;
   border-radius: 16px;
   font-family: "Cairo";
-  font-size: 1rem;
   background: #f8fafc;
   transition: all 0.3s;
-
   &:focus {
     outline: none;
     border-color: #00bcd4;
     background: white;
-    box-shadow: 0 0 0 4px rgba(0, 188, 212, 0.1);
   }
 `;
 
@@ -234,36 +193,28 @@ const SubmitButton = styled(motion.button)`
   align-items: center;
   justify-content: center;
   gap: 12px;
-  box-shadow: 0 10px 20px rgba(26, 35, 126, 0.2);
-
   .spinner-icon {
-    ${(props) =>
-      props.$status === "sending" &&
-      css`
-        animation: ${spin} 1s linear infinite;
-      `}
+    animation: ${spin} 1s linear infinite;
   }
 `;
 
 function HosRequestBlood() {
   const [formData, setFormData] = useState({
-    patientName: "",
-    bloodType: "",
-    area: "",
+    hospitalName: "",
+    department: "",
+    doctorName: "",
+    patientCondition: "",
+    urgency: "",
     quantity: 1,
+    bloodType: "",
   });
   const [status, setStatus] = useState("idle");
 
-  const daraaAreas = [
-    "درعا المدينة",
-    "نوى",
-    "طفس",
-    "إزرع",
-    "بصرى الشام",
-    "الصنمين",
-    "داعل",
-    "جاسم",
-  ];
+  // Hjälpfunktion för arabiska felmeddelanden
+  const arabicValidate = (msg = "يرجى ملء هذا الحقل") => ({
+    onInvalid: (e) => e.target.setCustomValidity(msg),
+    onInput: (e) => e.target.setCustomValidity(""),
+  });
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -281,47 +232,49 @@ function HosRequestBlood() {
       <GlobalStyle />
       <MainLayout>
         <ImageSection
-          initial={{ opacity: 0, x: -100 }}
+          initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 1, ease: "easeOut" }}
+          transition={{ duration: 0.8 }}
         >
           <div className="image-container">
-            <img src="/assets/blood2.png" alt="طلب دم عاجل" />
+            <img src="/assets/blood2.png" alt="طلب دم" />
           </div>
           <div className="text-box">
-            <h1>كل نقطة بتفرق</h1>
+            <h1>لوحة تحكم المستشفى</h1>
             <p>
-              ساهم في إنقاذ حياة من خلال طلب التبرع بالدم. طلبك سيصل فوراً لجميع
-              المسجلين في منطقتك.
+              من هنا يمكنك إرسال طلبات الدم المباشرة إلى بنك الدم المركزي
+              ومتابعة حالتها فوراً.
             </p>
           </div>
         </ImageSection>
 
         <Card
-          initial={{ opacity: 0, x: 100 }}
+          id="request-form" /* Matchar ID i Navbar */
+          initial={{ opacity: 0, x: 50 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 1, delay: 0.2 }}
+          transition={{ duration: 0.8 }}
         >
           <Header>
             <FaHospitalSymbol size={40} />
-            <h2>طلب دم عاجل</h2>
-            <p>محافظة درعا - حوران الأبية</p>
+            <h2>إرسال طلب استجرار دم</h2>
+            <p>يرجى ملء البيانات بدقة لضمان سرعة الاستجابة</p>
           </Header>
 
           <form onSubmit={handleSubmit}>
             <FormGrid>
               <FormGroup className="full-width">
                 <Label>
-                  <FaUser /> اسم المريض:
+                  <FaHospital /> اسم المستشفى:
                 </Label>
                 <InputWrapper>
-                  <FaUser />
+                  <FaHospital />
                   <InputField
                     required
-                    placeholder="الاسم الكامل"
-                    value={formData.patientName}
+                    {...arabicValidate()}
+                    placeholder="مثال: مستشفى درعا الوطني"
+                    value={formData.hospitalName}
                     onChange={(e) =>
-                      setFormData({ ...formData, patientName: e.target.value })
+                      setFormData({ ...formData, hospitalName: e.target.value })
                     }
                   />
                 </InputWrapper>
@@ -329,25 +282,58 @@ function HosRequestBlood() {
 
               <FormGroup>
                 <Label>
-                  <FaMapMarkerAlt /> المنطقة:
+                  <FaLayerGroup /> القسم:
                 </Label>
                 <InputWrapper>
-                  <FaMapMarkerAlt />
+                  <FaLayerGroup />
                   <InputField
-                    as="select"
                     required
-                    value={formData.area}
+                    {...arabicValidate()}
+                    placeholder="مثال: العناية المركزة"
+                    value={formData.department}
                     onChange={(e) =>
-                      setFormData({ ...formData, area: e.target.value })
+                      setFormData({ ...formData, department: e.target.value })
                     }
-                  >
-                    <option value="">اختر المنطقة</option>
-                    {daraaAreas.map((area) => (
-                      <option key={area} value={area}>
-                        {area}
-                      </option>
-                    ))}
-                  </InputField>
+                  />
+                </InputWrapper>
+              </FormGroup>
+
+              <FormGroup>
+                <Label>
+                  <FaUserMd /> الطبيب المشرف:
+                </Label>
+                <InputWrapper>
+                  <FaUserMd />
+                  <InputField
+                    required
+                    {...arabicValidate()}
+                    placeholder="اسم الطبيب"
+                    value={formData.doctorName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, doctorName: e.target.value })
+                    }
+                  />
+                </InputWrapper>
+              </FormGroup>
+
+              <FormGroup className="full-width">
+                <Label>
+                  <FaStethoscope /> حالة المريض:
+                </Label>
+                <InputWrapper>
+                  <FaStethoscope />
+                  <InputField
+                    required
+                    {...arabicValidate("يرجى وصف حالة المريض بدقة")}
+                    placeholder="مثال: حادث سير، عملية مجدولة..."
+                    value={formData.patientCondition}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        patientCondition: e.target.value,
+                      })
+                    }
+                  />
                 </InputWrapper>
               </FormGroup>
 
@@ -360,6 +346,7 @@ function HosRequestBlood() {
                   <InputField
                     as="select"
                     required
+                    {...arabicValidate("يرجى اختيار فصيلة الدم")}
                     value={formData.bloodType}
                     onChange={(e) =>
                       setFormData({ ...formData, bloodType: e.target.value })
@@ -377,7 +364,7 @@ function HosRequestBlood() {
                 </InputWrapper>
               </FormGroup>
 
-              <FormGroup className="full-width">
+              <FormGroup>
                 <Label>
                   <FaLayerGroup /> الكمية (أكياس):
                 </Label>
@@ -386,11 +373,36 @@ function HosRequestBlood() {
                   <InputField
                     type="number"
                     min="1"
+                    required
+                    {...arabicValidate()}
                     value={formData.quantity}
                     onChange={(e) =>
                       setFormData({ ...formData, quantity: e.target.value })
                     }
                   />
+                </InputWrapper>
+              </FormGroup>
+
+              <FormGroup className="full-width">
+                <Label>
+                  <FaExclamationTriangle /> درجة الاستعجال:
+                </Label>
+                <InputWrapper>
+                  <FaExclamationTriangle />
+                  <InputField
+                    as="select"
+                    required
+                    {...arabicValidate("يرجى تحديد درجة الاستعجال")}
+                    value={formData.urgency}
+                    onChange={(e) =>
+                      setFormData({ ...formData, urgency: e.target.value })
+                    }
+                  >
+                    <option value="">حدد الأولوية</option>
+                    <option value="emergency">حالة طارئة جداً (فوري)</option>
+                    <option value="high">مستعجل</option>
+                    <option value="normal">عادي / مجدول</option>
+                  </InputField>
                 </InputWrapper>
               </FormGroup>
             </FormGrid>
@@ -404,41 +416,21 @@ function HosRequestBlood() {
             >
               {status === "idle" && (
                 <>
-                  <FaPaperPlane /> إرسال النداء الآن
+                  <FaPaperPlane /> إرسال الطلب للبنك
                 </>
               )}
               {status === "sending" && (
                 <>
-                  <FaSpinner className="spinner-icon" /> جاري التعميم...
+                  <FaSpinner className="spinner-icon" /> جاري الإرسال...
                 </>
               )}
               {status === "success" && (
                 <>
-                  <FaCheckCircle /> تم الإرسال بنجاح
+                  <FaCheckCircle /> تم إرسال الطلب بنجاح
                 </>
               )}
             </SubmitButton>
           </form>
-
-          <AnimatePresence>
-            {status === "success" && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                style={{
-                  background: "#f0fdf4",
-                  color: "#166534",
-                  textAlign: "center",
-                  padding: "15px",
-                  fontWeight: "bold",
-                  borderTop: "1px solid #bcf0da",
-                }}
-              >
-                تم نشر النداء في منطقة {formData.area} بنجاح.
-              </motion.div>
-            )}
-          </AnimatePresence>
         </Card>
       </MainLayout>
     </ThemeProvider>
@@ -446,3 +438,452 @@ function HosRequestBlood() {
 }
 
 export default HosRequestBlood;
+
+// import React, { useState } from "react";
+// import styled, {
+//   ThemeProvider,
+//   createGlobalStyle,
+//   keyframes,
+//   css,
+// } from "styled-components";
+// import {
+//   FaUser,
+//   FaTint,
+//   FaLayerGroup,
+//   FaMapMarkerAlt,
+//   FaPaperPlane,
+//   FaCheckCircle,
+//   FaHospitalSymbol,
+//   FaSpinner,
+// } from "react-icons/fa";
+// import { motion, AnimatePresence } from "framer-motion";
+
+// const floating = keyframes`
+//   0% { transform: translateY(0px) rotate(0deg); }
+//   50% { transform: translateY(-20px) rotate(1deg); }
+//   100% { transform: translateY(0px) rotate(0deg); }
+// `;
+
+// const spin = keyframes`
+//   from { transform: rotate(0deg); }
+//   to { transform: rotate(360deg); }
+// `;
+
+// const GlobalStyle = createGlobalStyle`
+//   *, *::before, *::after { box-sizing: border-box; }
+//   body {
+//     margin: 0;
+//     padding: 0;
+//     font-family: 'Cairo', sans-serif;
+//     background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+//     direction: rtl;
+//     color: #003049;
+//     min-height: 100vh;
+//   }
+// `;
+
+// const MainLayout = styled.div`
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   min-height: 100vh;
+//   padding: 40px 20px;
+//   gap: 50px;
+//   max-width: 1300px;
+//   margin: 0 auto;
+
+//   @media (max-width: 900px) {
+//     flex-direction: column;
+//     padding-top: 20px;
+//   }
+// `;
+
+// const ImageSection = styled(motion.div)`
+//   flex: 1.2;
+//   display: flex;
+//   flex-direction: column;
+//   align-items: center;
+//   text-align: center;
+
+//   .image-container {
+//     animation: ${floating} 5s ease-in-out infinite;
+//     position: relative;
+
+//     img {
+//       width: 100%;
+//       max-width: 550px;
+//       height: auto;
+//       border-radius: 40px;
+//       box-shadow: 0 30px 60px rgba(26, 35, 126, 0.2);
+//       border: 10px solid white;
+//     }
+
+//     &::before {
+//       content: "";
+//       position: absolute;
+//       width: 110%;
+//       height: 110%;
+//       background: radial-gradient(
+//         circle,
+//         rgba(0, 188, 212, 0.1) 0%,
+//         transparent 70%
+//       );
+//       top: -5%;
+//       left: -5%;
+//       z-index: -1;
+//     }
+//   }
+
+//   .text-box {
+//     margin-top: 35px;
+//     h1 {
+//       color: #1a237e;
+//       font-weight: 900;
+//       font-size: 2.5rem;
+//       margin: 0;
+//       text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+//     }
+//     p {
+//       color: #475569;
+//       font-size: 1.2rem;
+//       margin-top: 15px;
+//       max-width: 450px;
+//       line-height: 1.6;
+//     }
+//   }
+// `;
+
+// const Card = styled(motion.div)`
+//   flex: 1;
+//   max-width: 500px;
+//   background: white;
+//   border-radius: 35px;
+//   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+//   overflow: hidden;
+//   border: 1px solid white;
+// `;
+
+// const Header = styled.div`
+//   background: #1a237e;
+//   color: white;
+//   padding: 35px 25px;
+//   text-align: center;
+//   position: relative;
+
+//   &::after {
+//     content: "";
+//     position: absolute;
+//     bottom: 0;
+//     left: 0;
+//     width: 100%;
+//     height: 5px;
+//     background: #00bcd4;
+//   }
+
+//   h2 {
+//     margin: 10px 0 5px;
+//     font-size: 1.8rem;
+//     font-weight: 900;
+//   }
+//   p {
+//     margin: 0;
+//     opacity: 0.8;
+//     font-size: 1rem;
+//   }
+// `;
+
+// const FormGrid = styled.div`
+//   display: grid;
+//   grid-template-columns: 1fr 1fr;
+//   gap: 20px;
+//   padding: 30px;
+
+//   @media (max-width: 500px) {
+//     grid-template-columns: 1fr;
+//   }
+// `;
+
+// const FormGroup = styled.div`
+//   &.full-width {
+//     grid-column: 1 / -1;
+//   }
+// `;
+
+// const Label = styled.label`
+//   display: flex;
+//   align-items: center;
+//   gap: 8px;
+//   margin-bottom: 8px;
+//   font-weight: 700;
+//   color: #334155;
+//   font-size: 0.95rem;
+// `;
+
+// const InputWrapper = styled.div`
+//   position: relative;
+//   display: flex;
+//   align-items: center;
+
+//   svg {
+//     position: absolute;
+//     right: 15px;
+//     color: #94a3b8;
+//     z-index: 2;
+//     transition: 0.3s;
+//   }
+
+//   &:focus-within svg {
+//     color: #00bcd4;
+//   }
+// `;
+
+// const InputField = styled.input`
+//   width: 100%;
+//   padding: 14px 45px 14px 15px;
+//   border: 2px solid #f1f5f9;
+//   border-radius: 16px;
+//   font-family: "Cairo";
+//   font-size: 1rem;
+//   background: #f8fafc;
+//   transition: all 0.3s;
+
+//   &:focus {
+//     outline: none;
+//     border-color: #00bcd4;
+//     background: white;
+//     box-shadow: 0 0 0 4px rgba(0, 188, 212, 0.1);
+//   }
+// `;
+
+// const SubmitButton = styled(motion.button)`
+//   width: calc(100% - 60px);
+//   margin: 0 30px 30px;
+//   padding: 20px;
+//   background: ${(props) =>
+//     props.$status === "success"
+//       ? "#4caf50"
+//       : props.$status === "sending"
+//         ? "#00bcd4"
+//         : "#1a237e"};
+//   color: white;
+//   border: none;
+//   border-radius: 20px;
+//   font-size: 1.2rem;
+//   font-weight: 800;
+//   cursor: pointer;
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   gap: 12px;
+//   box-shadow: 0 10px 20px rgba(26, 35, 126, 0.2);
+
+//   .spinner-icon {
+//     ${(props) =>
+//       props.$status === "sending" &&
+//       css`
+//         animation: ${spin} 1s linear infinite;
+//       `}
+//   }
+// `;
+
+// function HosRequestBlood() {
+//   const [formData, setFormData] = useState({
+//     patientName: "",
+//     bloodType: "",
+//     area: "",
+//     quantity: 1,
+//   });
+//   const [status, setStatus] = useState("idle");
+
+//   const daraaAreas = [
+//     "درعا المدينة",
+//     "نوى",
+//     "طفس",
+//     "إزرع",
+//     "بصرى الشام",
+//     "الصنمين",
+//     "داعل",
+//     "جاسم",
+//   ];
+
+//   const handleSubmit = (e) => {
+//     e.preventDefault();
+//     setStatus("sending");
+//     setTimeout(() => {
+//       setStatus("success");
+//       setTimeout(() => setStatus("idle"), 4000);
+//     }, 2000);
+//   };
+
+//   return (
+//     <ThemeProvider
+//       theme={{ colors: { primaryNavy: "#1a237e", medicalTeal: "#00bcd4" } }}
+//     >
+//       <GlobalStyle />
+//       <MainLayout>
+//         <ImageSection
+//           initial={{ opacity: 0, x: -100 }}
+//           animate={{ opacity: 1, x: 0 }}
+//           transition={{ duration: 1, ease: "easeOut" }}
+//         >
+//           <div className="image-container">
+//             <img src="/assets/blood2.png" alt="طلب دم عاجل" />
+//           </div>
+//           <div className="text-box">
+//             <h1>كل نقطة بتفرق</h1>
+//             <p>
+//               ساهم في إنقاذ حياة من خلال طلب التبرع بالدم. طلبك سيصل فوراً لجميع
+//               المسجلين في منطقتك.
+//             </p>
+//           </div>
+//         </ImageSection>
+
+//         <Card
+//           initial={{ opacity: 0, x: 100 }}
+//           animate={{ opacity: 1, x: 0 }}
+//           transition={{ duration: 1, delay: 0.2 }}
+//         >
+//           <Header>
+//             <FaHospitalSymbol size={40} />
+//             <h2>طلب دم عاجل</h2>
+//             <p>محافظة درعا - حوران الأبية</p>
+//           </Header>
+
+//           <form onSubmit={handleSubmit}>
+//             <FormGrid>
+//               <FormGroup className="full-width">
+//                 <Label>
+//                   <FaUser /> اسم المريض:
+//                 </Label>
+//                 <InputWrapper>
+//                   <FaUser />
+//                   <InputField
+//                     required
+//                     placeholder="الاسم الكامل"
+//                     value={formData.patientName}
+//                     onChange={(e) =>
+//                       setFormData({ ...formData, patientName: e.target.value })
+//                     }
+//                   />
+//                 </InputWrapper>
+//               </FormGroup>
+
+//               <FormGroup>
+//                 <Label>
+//                   <FaMapMarkerAlt /> المنطقة:
+//                 </Label>
+//                 <InputWrapper>
+//                   <FaMapMarkerAlt />
+//                   <InputField
+//                     as="select"
+//                     required
+//                     value={formData.area}
+//                     onChange={(e) =>
+//                       setFormData({ ...formData, area: e.target.value })
+//                     }
+//                   >
+//                     <option value="">اختر المنطقة</option>
+//                     {daraaAreas.map((area) => (
+//                       <option key={area} value={area}>
+//                         {area}
+//                       </option>
+//                     ))}
+//                   </InputField>
+//                 </InputWrapper>
+//               </FormGroup>
+
+//               <FormGroup>
+//                 <Label>
+//                   <FaTint /> الفصيلة:
+//                 </Label>
+//                 <InputWrapper>
+//                   <FaTint />
+//                   <InputField
+//                     as="select"
+//                     required
+//                     value={formData.bloodType}
+//                     onChange={(e) =>
+//                       setFormData({ ...formData, bloodType: e.target.value })
+//                     }
+//                   >
+//                     <option value="">اختر الفصيلة</option>
+//                     {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(
+//                       (t) => (
+//                         <option key={t} value={t}>
+//                           {t}
+//                         </option>
+//                       ),
+//                     )}
+//                   </InputField>
+//                 </InputWrapper>
+//               </FormGroup>
+
+//               <FormGroup className="full-width">
+//                 <Label>
+//                   <FaLayerGroup /> الكمية (أكياس):
+//                 </Label>
+//                 <InputWrapper>
+//                   <FaLayerGroup />
+//                   <InputField
+//                     type="number"
+//                     min="1"
+//                     value={formData.quantity}
+//                     onChange={(e) =>
+//                       setFormData({ ...formData, quantity: e.target.value })
+//                     }
+//                   />
+//                 </InputWrapper>
+//               </FormGroup>
+//             </FormGrid>
+
+//             <SubmitButton
+//               type="submit"
+//               $status={status}
+//               disabled={status === "sending"}
+//               whileHover={{ scale: 1.02 }}
+//               whileTap={{ scale: 0.98 }}
+//             >
+//               {status === "idle" && (
+//                 <>
+//                   <FaPaperPlane /> إرسال النداء الآن
+//                 </>
+//               )}
+//               {status === "sending" && (
+//                 <>
+//                   <FaSpinner className="spinner-icon" /> جاري التعميم...
+//                 </>
+//               )}
+//               {status === "success" && (
+//                 <>
+//                   <FaCheckCircle /> تم الإرسال بنجاح
+//                 </>
+//               )}
+//             </SubmitButton>
+//           </form>
+
+//           <AnimatePresence>
+//             {status === "success" && (
+//               <motion.div
+//                 initial={{ height: 0, opacity: 0 }}
+//                 animate={{ height: "auto", opacity: 1 }}
+//                 exit={{ height: 0, opacity: 0 }}
+//                 style={{
+//                   background: "#f0fdf4",
+//                   color: "#166534",
+//                   textAlign: "center",
+//                   padding: "15px",
+//                   fontWeight: "bold",
+//                   borderTop: "1px solid #bcf0da",
+//                 }}
+//               >
+//                 تم نشر النداء في منطقة {formData.area} بنجاح.
+//               </motion.div>
+//             )}
+//           </AnimatePresence>
+//         </Card>
+//       </MainLayout>
+//     </ThemeProvider>
+//   );
+// }
+
+// export default HosRequestBlood;
