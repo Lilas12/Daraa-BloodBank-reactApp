@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { auth } from "./firebase";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import {
+  onAuthStateChanged,
+  signOut,
+  setPersistence,
+  browserSessionPersistence,
+} from "firebase/auth";
 
 import "./AppLayout.css";
-import Navbar from "./components/layout/HosNavbar"; // Din nya Navbar med ikoner
-// import Dashboard from "./pages/HospitalDashboard";
+import Navbar from "./components/layout/HosNavbar";
 import Aappointment from "./pages/AppointmentsPage";
 import Settings from "./pages/HosSettings";
 import Statistics from "./pages/HosStatistics";
@@ -14,10 +18,9 @@ import InventoryPage from "./pages/HosInventoryPage";
 import BloodShopPage from "./pages/BloodShopPage";
 import DashboardPage from "./pages/DashboardPage";
 import ReportsPage from "./pages/ReportsPage";
-import Login from "./components/HosLogin";
+import Login from "./components/HosLogin"; // Ändra till HosLogin om din fil heter så
 import RequestBlood from "./components/hospital/HosRequestBlood";
 import Emergency from "./components/hospital/HosEmergency";
-
 import Footer from "./components/HosFooter";
 
 function App() {
@@ -25,11 +28,15 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
-    return () => unsubscribe();
+    // Tvingar session-persistence för utloggning vid flikstängning
+    setPersistence(auth, browserSessionPersistence)
+      .then(() => {
+        return onAuthStateChanged(auth, (currentUser) => {
+          setUser(currentUser);
+          setLoading(false);
+        });
+      })
+      .catch(() => setLoading(false));
   }, []);
 
   const handleLogout = async () => {
@@ -42,24 +49,21 @@ function App() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="loading-screen">
-        <div className="spinner">جاري التحميل...</div>
-      </div>
-    );
-  }
+  if (loading) return <div className="loading-screen">جاري التحميل...</div>;
 
   return (
     <>
       {!user ? (
-        <Login onLogin={setUser} />
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="*" element={<Navigate to="/login" />} />
+        </Routes>
       ) : (
         <div className="app-main-layout">
           <Navbar user={user} onLogout={handleLogout} />
-
           <main className="page-content">
             <Routes>
+              <Route path="/" element={<DashboardPage />} />
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/inventory" element={<InventoryPage />} />
@@ -68,9 +72,8 @@ function App() {
               <Route path="/request-blood" element={<RequestBlood />} />
               <Route path="/emergency" element={<Emergency />} />
               <Route path="/blood-orders" element={<BloodShopPage />} />
-              <Route path="/" element={<DashboardPage />} />
-              <Route path="*" element={<Navigate to="/" />} />
               <Route path="/reports" element={<ReportsPage />} />
+              <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </main>
           <Footer />
