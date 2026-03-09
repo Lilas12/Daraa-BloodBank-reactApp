@@ -1,540 +1,549 @@
-import React, { useState, useRef } from "react";
-import styled, { createGlobalStyle } from "styled-components";
+import React, { useState, useEffect } from "react";
+import styled, { keyframes } from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
-import confetti from "canvas-confetti";
 import {
-  FaTint,
-  FaShoppingCart,
-  FaPlus,
-  FaTrash,
   FaHospital,
-  FaCheckCircle,
+  FaCheckDouble,
+  FaFileInvoiceDollar,
+  FaHistory,
+  FaPlusCircle,
+  FaChartLine,
+  FaTimes,
   FaPrint,
-  FaFileInvoice,
-  FaArrowRight,
-  FaReceipt,
 } from "react-icons/fa";
 
-// --- Globala Inställningar ---
-const GlobalStyle = createGlobalStyle`
-  body {
-    margin: 0;
-    padding: 0;
-    background: #f0f2f5;
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    overflow-x: hidden;
-  }
-  @media print {
-    body * { visibility: hidden; }
-    #printable-invoice, #printable-invoice * { visibility: visible; }
-    #printable-invoice { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
-  }
+const colors = {
+  primary: "#DC143C",
+  secondary: "#1E293B",
+  success: "#10B981",
+  warning: "#F59E0B",
+  bg: "#F8FAFC",
+  white: "#FFFFFF",
+  border: "#E5E7EB",
+};
+
+const pulseGlow = keyframes`
+  0% { box-shadow: 0 0 0 0px rgba(220, 20, 60, 0.2); }
+  70% { box-shadow: 0 0 0 10px rgba(220, 20, 60, 0); }
+  100% { box-shadow: 0 0 0 0px rgba(220, 20, 60, 0); }
 `;
 
-const AppContainer = styled.div`
+const PageWrapper = styled.div`
+  background-color: ${colors.bg};
   min-height: 100vh;
-  padding: 20px;
   direction: rtl;
+  font-family: "Cairo", sans-serif;
 `;
-
-// --- Layout Komponenter ---
-const GlassHeader = styled.header`
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  padding: 20px 40px;
-  border-radius: 20px;
+const Container = styled.div`
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 20px;
+`;
+const StatsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 25px;
+  margin-bottom: 40px;
+`;
+const StatCard = styled.div`
+  background: ${(props) =>
+    props.gradient
+      ? `linear-gradient(135deg, ${colors.primary}, #8B0000)`
+      : colors.white};
+  padding: 30px;
+  border-radius: 24px;
+  color: ${(props) => (props.gradient ? "white" : colors.secondary)};
+  box-shadow: ${(props) =>
+    props.gradient
+      ? "0 15px 30px rgba(220, 20, 60, 0.2)"
+      : "0 10px 20px rgba(0,0,0,0.05)"};
+  border-right: ${(props) =>
+    props.border ? `8px solid ${colors.success}` : "none"};
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.3);
 `;
-
-const MainGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 400px;
-  gap: 25px;
-  max-width: 1300px;
-  margin: 0 auto;
-  @media (max-width: 1000px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const Card = styled(motion.div)`
-  background: white;
+const Section = styled.div`
+  background: ${colors.white};
   border-radius: 24px;
   padding: 30px;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.02);
-  border: 1px solid #edf2f7;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  margin-bottom: 40px;
+  border: 1px solid ${colors.border};
 `;
-
-const BloodItem = styled(Card)`
-  text-align: center;
-  transition: all 0.3s ease;
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(239, 68, 68, 0.1);
-  }
-`;
-
-const PriceCircle = styled.div`
-  background: #fff5f5;
-  color: #e53e3e;
-  width: fit-content;
-  padding: 8px 20px;
-  border-radius: 50px;
-  margin: 15px auto;
-  font-weight: 800;
-  font-size: 1.1rem;
-`;
-
-const ActionButton = styled(motion.button)`
-  width: 100%;
-  padding: 15px;
-  border-radius: 15px;
-  border: none;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
+const SectionTitle = styled.h3`
+  margin: 0 0 25px 0;
+  color: ${(props) => props.color || colors.secondary};
+  font-size: 22px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  background: ${(props) =>
-    props.$primary
-      ? "linear-gradient(135deg, #e53e3e 0%, #b91c1c 100%)"
-      : "#f7fafc"};
-  color: ${(props) => (props.$primary ? "white" : "#4a5568")};
-  box-shadow: ${(props) =>
-    props.$primary ? "0 4px 12px rgba(229, 62, 62, 0.3)" : "none"};
+  gap: 12px;
 `;
-
-const StyledInput = styled.input`
-  width: 100%;
-  padding: 16px;
+const ExternalOrderRow = styled(motion.div)`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-radius: 18px;
+  border: 1px solid
+    ${(props) => (props.status === "accepted" ? "#D1FAE5" : "#FEE2E2")};
+  background: ${(props) =>
+    props.status === "accepted" ? "#F0FDF4" : "#FFF5F5"};
   margin-bottom: 15px;
+  animation: ${(props) => (props.status === "pending" ? pulseGlow : "none")} 2s
+    infinite;
+`;
+const Table = styled.table`
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 12px;
+  th {
+    color: #9ca3af;
+    text-align: right;
+    padding: 0 20px;
+    font-size: 14px;
+  }
+`;
+const TableRow = styled.tr`
+  background: #f9fafb;
+  transition: 0.3s;
+  &:hover {
+    background: #f3f4f6;
+  }
+  td {
+    padding: 20px;
+    &:first-child {
+      border-radius: 0 15px 15px 0;
+    }
+    &:last-child {
+      border-radius: 15px 0 0 15px;
+    }
+  }
+`;
+const Badge = styled.span`
+  background: ${(props) => props.bg || "#FFE4E6"};
+  color: ${(props) => props.color || colors.primary};
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 13px;
+  margin-left: 8px;
+`;
+const ActionButton = styled.button`
+  background: ${(props) => props.bg || colors.primary};
+  color: white;
+  border: none;
+  padding: 12px 25px;
   border-radius: 12px;
-  border: 2px solid #edf2f7;
-  background: #f8fafc;
-  box-sizing: border-box;
-  font-size: 1rem;
-  &:focus {
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  &:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+  }
+`;
+const ModalOverlay = styled(motion.div)`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+`;
+const ModalContent = styled(motion.div)`
+  background: white;
+  padding: 35px;
+  border-radius: 30px;
+  width: 550px;
+  max-width: 95%;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+`;
+const InputGroup = styled.div`
+  margin-bottom: 20px;
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: ${colors.secondary};
+  }
+  input,
+  select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1.5px solid ${colors.border};
+    font-family: "Cairo";
     outline: none;
-    border-color: #e53e3e;
-    background: white;
+    transition: 0.3s;
+    &:focus {
+      border-color: ${colors.primary};
+    }
   }
 `;
 
-// --- Huvudkomponent ---
-const BloodShopPage = () => {
-  const [cart, setCart] = useState([]);
-  const [step, setStep] = useState("shop");
-  const [formData, setFormData] = useState({
-    hospital: "",
-    doctor: "",
-    notes: "",
-  });
+const printInvoice = (sale) => {
+  const printWindow = window.open("", "_blank");
+  printWindow.document.write(`
+    <html dir="rtl"><head><title>فاتورة - ${sale.invoiceNo}</title><style>@import url('https://fonts.googleapis.com/css2?family=Cairo&display=swap'); body { font-family: 'Cairo', sans-serif; padding: 40px; } .header { text-align: center; border-bottom: 3px solid ${colors.primary}; padding-bottom: 20px; } .invoice-box { border: 1px solid #eee; padding: 30px; border-radius: 20px; margin-top: 30px; } .row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f9f9f9; } .total { font-size: 28px; font-weight: bold; color: ${colors.primary}; margin-top: 30px; text-align: left; } </style></head>
+    <body><div class="header"><h1>بنك الدم الوطني</h1><p>رقم الفاتورة: ${sale.invoiceNo}</p></div><div class="invoice-box"><div class="row"><span>المريض:</span> <span>${sale.patientName}</span></div><div class="row"><span>الجهة:</span> <span>${sale.customerName}</span></div><div class="row"><span>المنتج:</span> <span>${sale.product} (${sale.bloodType})</span></div><div class="total">المبلغ النهائي: ${sale.amount.toLocaleString()} ل.س</div></div><div style="margin-top:50px; text-align:center; color:#999; font-size:12px;">تعتبر هذه الفاتورة سند قبض رسمي</div></body></html>
+  `);
+  printWindow.document.close();
+  setTimeout(() => printWindow.print(), 500);
+};
 
-  const popAudio = useRef(
-    new Audio(
-      "https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3",
-    ),
-  );
-  const cashAudio = useRef(
-    new Audio(
-      "https://assets.mixkit.co/active_storage/sfx/2017/2017-preview.mp3",
-    ),
-  );
+const BloodSalesPage = ({
+  externalSales = [],
+  updateOrderStatus,
+  clearNotifications,
+}) => {
+  const [showModal, setShowModal] = useState(false);
 
-  const playSound = (ref) => {
-    ref.current.currentTime = 0;
-    ref.current.play().catch(() => {});
-  };
-
-  const bloodTypes = [
-    { id: 1, type: "O+", price: 15000 },
-    { id: 2, type: "A+", price: 12000 },
-    { id: 3, type: "B+", price: 18000 },
-    { id: 4, type: "AB-", price: 45000 },
-    { id: 5, type: "O-", price: 35000 },
-    { id: 6, type: "A-", price: 22000 },
+  const hospitalsInDaraa = [
+    "مراجعة خارجية",
+    "مستشفى درعا الوطني",
+    "مستشفى الصنمين",
+    "مستشفى الشيخ مسكين",
+    "مستشفى ازرع",
+    "مركز درعا الطبي",
+    "مستشفى الأطفال",
+    "مستشفى الولادة",
   ];
 
-  const addToCart = (item) => {
-    playSound(popAudio);
-    setCart((prev) => {
-      const exists = prev.find((i) => i.id === item.id);
-      return exists
-        ? prev.map((i) => (i.id === item.id ? { ...i, qty: i.qty + 1 } : i))
-        : [...prev, { ...item, qty: 1 }];
-    });
+  const [totalRevenue, setTotalRevenue] = useState(() => {
+    const saved = localStorage.getItem("totalRevenue");
+    return saved ? parseInt(saved) : 3500000;
+  });
+
+  const [sales, setSales] = useState([
+    {
+      id: 1,
+      invoiceNo: "INV-8821",
+      customerName: "مستشفى درعا الوطني",
+      patientName: "سارة أحمد",
+      bloodType: "A+",
+      product: "بلازما",
+      amount: 240000,
+      status: "تم التسليم",
+    },
+    {
+      id: 2,
+      invoiceNo: "INV-8822",
+      customerName: "مراجعة خارجية",
+      patientName: "محمد علي",
+      bloodType: "B-",
+      product: "دم كامل",
+      amount: 200000,
+      status: "تم التسليم",
+    },
+  ]);
+
+  const [formData, setFormData] = useState({
+    customerName: "مراجعة خارجية",
+    patientName: "",
+    bloodType: "O+",
+    product: "دم كامل",
+    quantity: 1,
+  });
+
+  useEffect(() => {
+    if (clearNotifications) clearNotifications();
+  }, [clearNotifications]);
+
+  const updateGlobalRevenue = (newAmount) => {
+    const updatedTotal = totalRevenue + newAmount;
+    setTotalRevenue(updatedTotal);
+    localStorage.setItem("totalRevenue", updatedTotal);
   };
 
-  const removeFromCart = (id) =>
-    setCart((prev) => prev.filter((i) => i.id !== id));
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
 
-  const handleFinish = () => {
-    if (!formData.hospital || !formData.doctor)
-      return alert("الرجاء إدخال البيانات المطلوبة");
-    playSound(cashAudio);
-    confetti({
-      particleCount: 150,
-      spread: 80,
-      colors: ["#e53e3e", "#ffffff"],
-    });
-    setStep("success");
+    const unitPrice = formData.product === "دم كامل" ? 200000 : 240000;
+    const total = unitPrice * (formData.quantity || 1);
+
+    const newSale = {
+      id: Date.now(),
+      invoiceNo: `INV-${Math.floor(1000 + Math.random() * 9000)}`,
+      ...formData,
+      amount: total,
+      status: "تم التسليم",
+    };
+
+    setSales([newSale, ...sales]);
+    updateGlobalRevenue(total);
+    setShowModal(false);
   };
 
-  const total = cart.reduce((acc, i) => acc + i.price * i.qty, 0);
+  const handleAcceptOrder = (order) => {
+    if (updateOrderStatus) {
+      updateOrderStatus(order.id, "accepted");
+      updateGlobalRevenue(order.totalPrice || 0);
+    }
+  };
 
   return (
-    <AppContainer>
-      <GlobalStyle />
-
-      <GlassHeader className="no-print">
-        <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
-          <div
-            style={{
-              background: "#e53e3e",
-              padding: "10px",
-              borderRadius: "12px",
-            }}
-          >
-            <FaHospital color="white" size={24} />
-          </div>
-          <h1 style={{ margin: 0, fontSize: "22px", fontWeight: 900 }}>
-            نظام حوران <span style={{ color: "#e53e3e" }}>الرقمي</span>
-          </h1>
-        </div>
-        <div style={{ fontWeight: 600, color: "#718096" }}>
-          بنك الدم المركزي
-        </div>
-      </GlassHeader>
-
-      <AnimatePresence mode="wait">
-        {step === "shop" && (
-          <motion.div
-            key="shop"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-          >
-            <MainGrid>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-                  gap: "20px",
-                }}
-              >
-                {bloodTypes.map((blood) => (
-                  <BloodItem key={blood.id}>
-                    <FaTint size={40} color="#e53e3e" />
-                    <h2 style={{ margin: "10px 0" }}>فصيلة {blood.type}</h2>
-                    <PriceCircle>
-                      {blood.price.toLocaleString()} ل.س
-                    </PriceCircle>
-                    <ActionButton
-                      $primary
-                      onClick={() => addToCart(blood)}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <FaPlus /> إضافة للطلب
-                    </ActionButton>
-                  </BloodItem>
-                ))}
+    <PageWrapper>
+      <Container>
+        <StatsGrid>
+          <StatCard gradient>
+            <div>
+              <div style={{ opacity: 0.8, fontSize: "14px" }}>
+                إجمالي عمليات اليوم
               </div>
-
-              <Card style={{ height: "fit-content" }}>
-                <h3
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    marginTop: 0,
-                  }}
-                >
-                  <FaShoppingCart color="#e53e3e" /> سلة التوريد
-                </h3>
-                {cart.length === 0 ? (
-                  <p style={{ color: "#a0aec0", textAlign: "center" }}>
-                    السلة فارغة حالياً
-                  </p>
-                ) : (
-                  <>
-                    {cart.map((item) => (
-                      <div
-                        key={item.id}
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          padding: "15px 0",
-                          borderBottom: "1px solid #f7fafc",
-                        }}
-                      >
-                        <div>
-                          <div style={{ fontWeight: 700 }}>{item.type}</div>
-                          <div style={{ fontSize: "12px", color: "#e53e3e" }}>
-                            {item.qty} وحدة
-                          </div>
-                        </div>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "10px",
-                          }}
-                        >
-                          <span style={{ fontWeight: 800 }}>
-                            {(item.price * item.qty).toLocaleString()}
-                          </span>
-                          <FaTrash
-                            color="#cbd5e1"
-                            cursor="pointer"
-                            onClick={() => removeFromCart(item.id)}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                    <div style={{ marginTop: "30px" }}>
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          fontSize: "1.4rem",
-                          fontWeight: 900,
-                          marginBottom: "20px",
-                        }}
-                      >
-                        <span>الإجمالي:</span>
-                        <span style={{ color: "#e53e3e" }}>
-                          {total.toLocaleString()}
-                        </span>
-                      </div>
-                      <ActionButton $primary onClick={() => setStep("form")}>
-                        متابعة الطلب <FaArrowRight />
-                      </ActionButton>
-                    </div>
-                  </>
-                )}
-              </Card>
-            </MainGrid>
-          </motion.div>
-        )}
-
-        {step === "form" && (
-          <motion.div
-            key="form"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-          >
-            <Card style={{ maxWidth: "500px", margin: "40px auto" }}>
-              <h2 style={{ textAlign: "center" }}>
-                <FaFileInvoice color="#e53e3e" /> تأكيد المعلومات
-              </h2>
-              <label>المشفى المستلم</label>
-              <StyledInput
-                placeholder="اسم المشفى الحكومي أو الخاص"
-                onChange={(e) =>
-                  setFormData({ ...formData, hospital: e.target.value })
-                }
-              />
-              <label>الطبيب المسؤول</label>
-              <StyledInput
-                placeholder="اسم الطبيب الكامل"
-                onChange={(e) =>
-                  setFormData({ ...formData, doctor: e.target.value })
-                }
-              />
-              <label>ملاحظات إضافية</label>
-              <StyledInput
-                as="textarea"
-                rows="3"
-                placeholder="ملاحظات حول النقل أو التخزين"
-                onChange={(e) =>
-                  setFormData({ ...formData, notes: e.target.value })
-                }
-              />
-              <div style={{ display: "flex", gap: "10px" }}>
-                <ActionButton $primary onClick={handleFinish}>
-                  إرسال الطلب <FaReceipt />
-                </ActionButton>
-                <ActionButton onClick={() => setStep("shop")}>
-                  رجوع
-                </ActionButton>
-              </div>
-            </Card>
-          </motion.div>
-        )}
-
-        {step === "success" && (
-          <motion.div
-            key="success"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <div
-              className="no-print"
-              style={{ textAlign: "center", padding: "50px" }}
-            >
-              <FaCheckCircle size={80} color="#48bb78" />
-              <h1 style={{ fontSize: "2.5rem", marginTop: "20px" }}>
-                تم بنجاح!
-              </h1>
-              <p>تم تسجيل طلبية الدم وتوليد الفاتورة الرسمية.</p>
-              <div
-                style={{
-                  display: "flex",
-                  gap: "15px",
-                  justifyContent: "center",
-                  marginTop: "30px",
-                }}
-              >
-                <ActionButton
-                  $primary
-                  onClick={() => window.print()}
-                  style={{ width: "220px" }}
-                >
-                  <FaPrint /> طباعة الفاتورة
-                </ActionButton>
-                <ActionButton
-                  onClick={() => {
-                    setCart([]);
-                    setStep("shop");
-                  }}
-                  style={{ width: "220px" }}
-                >
-                  طلب جديد
-                </ActionButton>
+              <div style={{ fontSize: "32px", fontWeight: "900" }}>
+                {sales.length + externalSales.length}
               </div>
             </div>
+            <FaChartLine size={40} style={{ opacity: 0.3 }} />
+          </StatCard>
+          <StatCard border>
+            <div>
+              <div style={{ color: "#6B7280", fontSize: "14px" }}>
+                إجمالي الإيرادات المزامنة (ل.س)
+              </div>
+              <div
+                style={{
+                  fontSize: "32px",
+                  fontWeight: "900",
+                  color: colors.secondary,
+                }}
+              >
+                {totalRevenue.toLocaleString()}
+              </div>
+            </div>
+            <FaFileInvoiceDollar
+              size={40}
+              color={colors.success}
+              style={{ opacity: 0.2 }}
+            />
+          </StatCard>
+        </StatsGrid>
 
-            {/* FAKTURA FÖR UTSKRIFT */}
-            <div
-              id="printable-invoice"
-              style={{
-                display: "none",
-                background: "white",
-                padding: "50px",
-                border: "2px solid #e53e3e",
-              }}
-            >
+        <Section>
+          <SectionTitle color={colors.primary}>
+            <FaHospital /> طلبات المستشفيات الخارجية (درعا)
+          </SectionTitle>
+          <AnimatePresence>
+            {externalSales.length === 0 ? (
+              <div
+                style={{
+                  textAlign: "center",
+                  padding: "40px",
+                  color: "#9CA3AF",
+                }}
+              >
+                لا يوجد طلبات خارجية نشطة
+              </div>
+            ) : (
+              externalSales.map((order) => (
+                <ExternalOrderRow key={order.id} status={order.status}>
+                  <div>
+                    <div style={{ fontSize: "12px", color: "#9CA3AF" }}>
+                      {order.timestamp}
+                    </div>
+                    <div style={{ fontSize: "18px", fontWeight: "bold" }}>
+                      المريض: {order.patientName}
+                    </div>
+                    <div style={{ marginTop: "5px" }}>
+                      <Badge>{order.bloodType}</Badge>
+                      <span>
+                        {order.productName} × {order.quantity}
+                      </span>
+                    </div>
+                  </div>
+                  {order.status === "pending" ? (
+                    <ActionButton
+                      bg={colors.success}
+                      onClick={() => handleAcceptOrder(order)}
+                    >
+                      <FaCheckDouble /> قبول وتسليم
+                    </ActionButton>
+                  ) : (
+                    <ActionButton
+                      bg={colors.secondary}
+                      onClick={() =>
+                        printInvoice({
+                          invoiceNo: order.id,
+                          patientName: order.patientName,
+                          customerName: "مستشفى خارجي",
+                          product: order.productName,
+                          bloodType: order.bloodType,
+                          amount: order.totalPrice,
+                        })
+                      }
+                    >
+                      <FaPrint /> طباعة الفاتورة
+                    </ActionButton>
+                  )}
+                </ExternalOrderRow>
+              ))
+            )}
+          </AnimatePresence>
+        </Section>
+
+        <Section>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "30px",
+            }}
+          >
+            <SectionTitle>
+              <FaHistory /> سجل المبيعات المباشرة
+            </SectionTitle>
+            <ActionButton onClick={() => setShowModal(true)}>
+              <FaPlusCircle /> بيع مباشر جديد
+            </ActionButton>
+          </div>
+          <div style={{ overflowX: "auto" }}>
+            <Table>
+              <thead>
+                <tr>
+                  <th>المعرف</th>
+                  <th>الجهة</th>
+                  <th>المريض</th>
+                  <th>المنتج</th>
+                  <th>القيمة</th>
+                  <th>إجراءات</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sales.map((sale) => (
+                  <TableRow key={sale.id}>
+                    <td style={{ fontWeight: "bold" }}>{sale.invoiceNo}</td>
+                    <td>{sale.customerName}</td>
+                    <td>{sale.patientName}</td>
+                    <td>
+                      <Badge bg="#F1F5F9" color="#475569">
+                        {sale.bloodType}
+                      </Badge>
+                      {sale.product}
+                    </td>
+                    <td style={{ fontWeight: "bold", color: colors.primary }}>
+                      {sale.amount.toLocaleString()} ل.س
+                    </td>
+                    <td>
+                      <FaPrint
+                        onClick={() => printInvoice(sale)}
+                        style={{ cursor: "pointer" }}
+                      />
+                    </td>
+                  </TableRow>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+        </Section>
+      </Container>
+
+      <AnimatePresence>
+        {showModal && (
+          <ModalOverlay
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <ModalContent initial={{ scale: 0.9 }}>
               <div
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
-                  borderBottom: "4px solid #e53e3e",
-                  paddingBottom: "20px",
-                  marginBottom: "30px",
+                  marginBottom: "25px",
                 }}
               >
-                <div>
-                  <h1 style={{ color: "#e53e3e", margin: 0 }}>
-                    فاتورة توريد دم
-                  </h1>
-                  <p>بنك الدم المركزي - درعا</p>
-                </div>
-                <div style={{ textAlign: "left" }}>
-                  <p>
-                    <strong>الرقم:</strong> #
-                    {Math.floor(Math.random() * 100000)}
-                  </p>
-                  <p>
-                    <strong>التاريخ:</strong>{" "}
-                    {new Date().toLocaleDateString("ar-SY")}
-                  </p>
-                </div>
+                <SectionTitle style={{ marginBottom: 0 }}>
+                  <FaPlusCircle color={colors.primary} /> تسجيل بيع جديد
+                </SectionTitle>
+                <FaTimes
+                  onClick={() => setShowModal(false)}
+                  style={{ cursor: "pointer" }}
+                />
               </div>
-              <div
-                style={{
-                  marginBottom: "30px",
-                  background: "#f7fafc",
-                  padding: "20px",
-                  borderRadius: "10px",
-                }}
-              >
-                <p>
-                  <strong>جهة الاستلام:</strong> {formData.hospital}
-                </p>
-                <p>
-                  <strong>الطبيب المستلم:</strong> {formData.doctor}
-                </p>
-              </div>
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead style={{ background: "#e53e3e", color: "white" }}>
-                  <tr>
-                    <th
-                      style={{ padding: "15px", border: "1px solid #e53e3e" }}
+              <form onSubmit={handleFormSubmit}>
+                <InputGroup>
+                  <label>اسم المريض الكامل</label>
+                  <input
+                    required
+                    placeholder="أدخل اسم المريض"
+                    onChange={(e) =>
+                      setFormData({ ...formData, patientName: e.target.value })
+                    }
+                  />
+                </InputGroup>
+
+                <InputGroup>
+                  <label>جهة الاستلام (درعا)</label>
+                  <select
+                    onChange={(e) =>
+                      setFormData({ ...formData, customerName: e.target.value })
+                    }
+                  >
+                    {hospitalsInDaraa.map((h, i) => (
+                      <option key={i} value={h}>
+                        {h}
+                      </option>
+                    ))}
+                  </select>
+                </InputGroup>
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "15px",
+                  }}
+                >
+                  <InputGroup>
+                    <label>فصيلة الدم</label>
+                    <select
+                      onChange={(e) =>
+                        setFormData({ ...formData, bloodType: e.target.value })
+                      }
                     >
-                      الوصف
-                    </th>
-                    <th
-                      style={{ padding: "15px", border: "1px solid #e53e3e" }}
+                      {["O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-"].map(
+                        (t) => (
+                          <option key={t}>{t}</option>
+                        ),
+                      )}
+                    </select>
+                  </InputGroup>
+                  <InputGroup>
+                    <label>نوع المنتج</label>
+                    <select
+                      onChange={(e) =>
+                        setFormData({ ...formData, product: e.target.value })
+                      }
                     >
-                      الكمية
-                    </th>
-                    <th
-                      style={{ padding: "15px", border: "1px solid #e53e3e" }}
-                    >
-                      السعر
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {cart.map((i) => (
-                    <tr key={i.id}>
-                      <td
-                        style={{ padding: "12px", border: "1px solid #edf2f7" }}
-                      >
-                        وحدة دم ({i.type})
-                      </td>
-                      <td
-                        style={{
-                          padding: "12px",
-                          border: "1px solid #edf2f7",
-                          textAlign: "center",
-                        }}
-                      >
-                        {i.qty}
-                      </td>
-                      <td
-                        style={{ padding: "12px", border: "1px solid #edf2f7" }}
-                      >
-                        {(i.price * i.qty).toLocaleString()} ل.س
-                      </td>
-                    </tr>
-                  ))}
-                  <tr>
-                    <td
-                      colSpan="2"
-                      style={{
-                        padding: "20px",
-                        textAlign: "left",
-                        fontWeight: 900,
-                      }}
-                    >
-                      الإجمالي النهائي:
-                    </td>
-                    <td
-                      style={{
-                        padding: "20px",
-                        color: "#e53e3e",
-                        fontWeight: 900,
-                      }}
-                    >
-                      {total.toLocaleString()} ل.س
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </motion.div>
+                      <option value="دم كامل">دم كامل (200,000 ل.س)</option>
+                      <option value="بلازما">بلازما (240,000 ل.س)</option>
+                    </select>
+                  </InputGroup>
+                </div>
+
+                <ActionButton
+                  style={{ width: "100%", padding: "15px", marginTop: "10px" }}
+                  type="submit"
+                >
+                  حفظ العملية وإصدار فاتورة
+                </ActionButton>
+              </form>
+            </ModalContent>
+          </ModalOverlay>
         )}
       </AnimatePresence>
-    </AppContainer>
+    </PageWrapper>
   );
 };
 
-export default BloodShopPage;
+export default BloodSalesPage;

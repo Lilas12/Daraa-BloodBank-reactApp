@@ -1,6 +1,6 @@
-// src/firebase.js
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth"; // Se till att denna rad finns
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB3UuIGe2ordlIRAzLp5oTo4ssfpfBSwu4",
@@ -12,6 +12,5 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-
-// VIKTIGT: Kontrollera att det står "export" här!
 export const auth = getAuth(app);
+export const db = getFirestore(app);

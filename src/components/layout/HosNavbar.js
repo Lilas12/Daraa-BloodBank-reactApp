@@ -1,223 +1,183 @@
-// import React, { useState } from "react";
-// import styled from "styled-components";
-// import { NavLink, useNavigate } from "react-router-dom";
-// import {
-//   FaUserInjured,
-//   FaWarehouse,
-//   FaChartBar,
-//   FaExclamationTriangle,
-//   FaCog,
-//   FaFileMedical,
-//   FaBars,
-//   FaTimes,
-//   FaSignOutAlt,
-//   FaTint,
-// } from "react-icons/fa";
+import React, { useState } from "react";
+import styled from "styled-components";
+import { NavLink, useNavigate } from "react-router-dom";
 
-// const NavContainer = styled.header`
-//   background: #0f172a;
-//   color: white;
-//   height: 80px;
-//   display: flex;
-//   align-items: center;
-//   justify-content: space-between;
-//   padding: 0 2rem;
-//   position: sticky;
-//   top: 0;
-//   z-index: 1000;
-//   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-//   direction: rtl;
-// `;
+import NotificationsBell from "../NotificationsBell";
+import {
+  FaUserInjured,
+  FaWarehouse,
+  FaChartBar,
+  FaExclamationTriangle,
+  FaCog,
+  FaFileMedical,
+  FaBars,
+  FaSignOutAlt,
+  FaTint,
+} from "react-icons/fa";
 
-// const RightSection = styled.div`
-//   display: flex;
-//   align-items: center;
-//   gap: 30px;
-// `;
+const NavContainer = styled.header`
+  background: #0f172a;
+  color: white;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  direction: rtl; /* Stödjer arabiska */
+`;
 
-// const Logo = styled.div`
-//   display: flex;
-//   align-items: center;
-//   gap: 12px;
-//   cursor: pointer;
-//   transition: all 0.2s ease-in-out;
+const RightSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
 
-//   &:hover {
-//     transform: translateY(-1px);
-//     filter: brightness(1.2);
-//   }
+const Logo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  margin-left: 15px;
+  h2 {
+    font-size: 1.1rem;
+    margin: 0;
+    color: #ef4444;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+`;
 
-//   h2 {
-//     font-size: 1.4rem;
-//     margin: 0;
-//     color: #ef4444;
-//     font-weight: 800;
-//     white-space: nowrap;
-//     letter-spacing: -0.5px;
-//   }
-// `;
+const NavLinksWrapper = styled.nav`
+  display: flex;
+  gap: 4px;
 
-// const NavLinksWrapper = styled.nav`
-//   display: flex;
-//   gap: 8px;
+  @media (max-width: 1150px) {
+    display: ${({ $isOpen }) => ($isOpen ? "flex" : "none")};
+    flex-direction: column;
+    position: absolute;
+    top: 80px;
+    right: 0;
+    width: 100%;
+    background: #0f172a;
+    padding: 20px;
+  }
+`;
 
-//   @media (max-width: 1150px) {
-//     display: ${({ $isOpen }) => ($isOpen ? "flex" : "none")};
-//     flex-direction: column;
-//     position: absolute;
-//     top: 80px;
-//     right: 0;
-//     width: 100%;
-//     background: #0f172a;
-//     padding: 20px;
-//     border-top: 1px solid rgba(255, 255, 255, 0.1);
-//     box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
-//   }
-// `;
+const MenuLink = styled(NavLink)`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  color: #94a3b8;
+  text-decoration: none;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  font-size: 0.82rem;
+  white-space: nowrap;
 
-// const MenuLink = styled(NavLink)`
-//   display: flex;
-//   align-items: center;
-//   gap: 10px;
-//   padding: 10px 16px;
-//   color: #94a3b8;
-//   text-decoration: none;
-//   border-radius: 12px;
-//   transition: all 0.3s ease;
-//   font-weight: 600;
-//   font-size: 0.95rem;
-//   white-space: nowrap;
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+  }
 
-//   &:hover {
-//     background: rgba(255, 255, 255, 0.05);
-//     color: white;
-//   }
+  &.active {
+    background: #2563eb;
+    color: white;
+  }
+`;
 
-//   &.active {
-//     background: #2563eb;
-//     color: white;
-//     box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-//   }
+const LeftActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 15px;
+`;
 
-//   @media (max-width: 1150px) {
-//     width: 100%;
-//     padding: 15px;
-//     font-size: 1.1rem;
-//   }
-// `;
+const LogoutBtn = styled.button`
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: 0.3s;
+  &:hover {
+    background: #ef4444;
+    color: white;
+  }
+`;
 
-// const LeftSection = styled.div`
-//   display: flex;
-//   align-items: center;
-//   gap: 15px;
-// `;
+const Navbar = ({ onLogout }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
 
-// const IconWrapper = styled.span`
-//   font-size: 1.1rem;
-//   display: flex;
-//   align-items: center;
-// `;
+  const menuItems = [
+    { name: "مخزون الدم", to: "/inventory", icon: <FaWarehouse /> },
+    { name: "بيع الدم", to: "/blood-orders", icon: <FaTint /> },
+    { name: "الطوارئ", to: "/emergency", icon: <FaExclamationTriangle /> },
+    { name: "المواعيد", to: "/appointments", icon: <FaUserInjured /> },
+    { name: "المستشفيات", to: "/request-blood", icon: <FaFileMedical /> },
+    { name: "الإحصائيات", to: "/statistics", icon: <FaChartBar /> },
+    { name: "الإعدادات", to: "/settings", icon: <FaCog /> },
+    { name: "التقارير", to: "/reports", icon: <FaChartBar /> },
+  ];
 
-// const MobileIcon = styled.div`
-//   display: none;
-//   cursor: pointer;
-//   font-size: 1.8rem;
-//   color: white;
-//   transition: 0.2s;
+  return (
+    <NavContainer>
+      <RightSection>
+        <Logo onClick={() => navigate("/")}>
+          <FaTint size={22} color="#ef4444" />
+          <h2>بنك الدم بدرعا</h2>
+        </Logo>
+        <NavLinksWrapper $isOpen={isOpen}>
+          {menuItems.map((item) => (
+            <MenuLink
+              key={item.to}
+              to={item.to}
+              onClick={() => setIsOpen(false)}
+            >
+              <span style={{ fontSize: "1rem" }}>{item.icon}</span>
+              <span>{item.name}</span>
+            </MenuLink>
+          ))}
+        </NavLinksWrapper>
+      </RightSection>
 
-//   &:hover {
-//     color: #3b82f6;
-//   }
+      <LeftActions>
+        <NotificationsBell />
 
-//   @media (max-width: 1150px) {
-//     display: block;
-//   }
-// `;
+        <LogoutBtn onClick={onLogout}>
+          <span>خروج</span>
+          <FaSignOutAlt />
+        </LogoutBtn>
 
-// const LogoutBtn = styled.button`
-//   background: rgba(239, 68, 68, 0.15);
-//   color: #ef4444;
-//   border: 1px solid rgba(239, 68, 68, 0.2);
-//   padding: 10px 18px;
-//   border-radius: 10px;
-//   font-weight: 700;
-//   cursor: pointer;
-//   display: flex;
-//   align-items: center;
-//   gap: 10px;
-//   transition: all 0.2s;
+        <div
+          onClick={() => setIsOpen(!isOpen)}
+          style={{
+            color: "white",
+            fontSize: "1.5rem",
+            cursor: "pointer",
+            display: "none",
+          }}
+          className="mobile-toggle"
+        >
+          <FaBars />
+        </div>
+      </LeftActions>
+    </NavContainer>
+  );
+};
 
-//   &:hover {
-//     background: #ef4444;
-//     color: white;
-//   }
-
-//   span {
-//     @media (max-width: 700px) {
-//       display: none;
-//     }
-//   }
-// `;
-
-// const Navbar = ({ onLogout }) => {
-//   const [isOpen, setIsOpen] = useState(false);
-//   const navigate = useNavigate();
-
-//   const menuItems = [
-//     { name: "مخزون الدم", to: "/inventory", icon: <FaWarehouse /> },
-//     { name: "المرضى", to: "/patients", icon: <FaUserInjured /> },
-//     { name: "طلبات الدم", to: "/request-blood", icon: <FaFileMedical /> },
-
-//     // ÄNDRA DENNA RAD SÅ ATT 'to' MATCHAR ROUTEN I APP.JS
-//     { name: "شراء دم", to: "/blood-orders", icon: <FaTint /> },
-
-//     { name: "الإحصائيات", to: "/statistics", icon: <FaChartBar /> },
-//     { name: "الطوارئ", to: "/emergency", icon: <FaExclamationTriangle /> },
-//     { name: "الإعدادات", to: "/settings", icon: <FaCog /> },
-//   ];
-//   return (
-//     <NavContainer>
-//       <RightSection>
-//         <Logo
-//           onClick={() => {
-//             navigate("/");
-//             setIsOpen(false);
-//           }}
-//         >
-//           <FaTint size={28} color="#ef4444" />
-//           <h2>بنك الدم بدرعا</h2>
-//         </Logo>
-
-//         <NavLinksWrapper $isOpen={isOpen}>
-//           {menuItems.map((item) => (
-//             <MenuLink
-//               key={item.to}
-//               to={item.to}
-//               onClick={() => setIsOpen(false)}
-//             >
-//               <IconWrapper>{item.icon}</IconWrapper>
-//               <span>{item.name}</span>
-//             </MenuLink>
-//           ))}
-//         </NavLinksWrapper>
-//       </RightSection>
-
-//       {/* VÄNSTER SIDA: LOGOUT & MOBIL-IKON */}
-//       <LeftSection>
-//         <LogoutBtn onClick={onLogout}>
-//           <span>تسجيل الخروج</span>
-//           <FaSignOutAlt />
-//         </LogoutBtn>
-
-//         <MobileIcon onClick={() => setIsOpen(!isOpen)}>
-//           {isOpen ? <FaTimes /> : <FaBars />}
-//         </MobileIcon>
-//       </LeftSection>
-//     </NavContainer>
-//   );
-// };
-
-// export default Navbar;
+export default Navbar;
 
 // import React, { useState } from "react";
 // import styled from "styled-components";
@@ -380,117 +340,117 @@
 
 // export default Navbar;
 
-import React from "react";
-import styled from "styled-components";
-import {
-  FaSignOutAlt,
-  FaHospital,
-  FaClipboardList,
-  FaTruckLoading,
-} from "react-icons/fa";
-import { auth } from "../../firebase"; // تأكد من صحة المسار لملف firebase الخاص بك
-import { signOut } from "firebase/auth";
+// import React from "react";
+// import styled from "styled-components";
+// import {
+//   FaSignOutAlt,
+//   FaHospital,
+//   FaClipboardList,
+//   FaTruckLoading,
+// } from "react-icons/fa";
+// import { auth } from "../../firebase"; // تأكد من صحة المسار لملف firebase الخاص بك
+// import { signOut } from "firebase/auth";
 
-const Nav = styled.nav`
-  background: #05071a;
-  padding: 15px 40px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  direction: rtl;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-`;
+// const Nav = styled.nav`
+//   background: #05071a;
+//   padding: 15px 40px;
+//   display: flex;
+//   justify-content: space-between;
+//   align-items: center;
+//   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+//   direction: rtl;
+//   position: sticky;
+//   top: 0;
+//   z-index: 1000;
+// `;
 
-const Logo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: #00bcd4;
-  font-weight: 900;
-  font-size: 1.4rem;
-`;
+// const Logo = styled.div`
+//   display: flex;
+//   align-items: center;
+//   gap: 12px;
+//   color: #00bcd4;
+//   font-weight: 900;
+//   font-size: 1.4rem;
+// `;
 
-const NavLinks = styled.div`
-  display: flex;
-  gap: 30px;
-`;
+// const NavLinks = styled.div`
+//   display: flex;
+//   gap: 30px;
+// `;
 
-const NavLink = styled.a`
-  color: rgba(255, 255, 255, 0.7);
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.95rem;
-  transition: 0.3s;
-  cursor: pointer;
+// const NavLink = styled.a`
+//   color: rgba(255, 255, 255, 0.7);
+//   text-decoration: none;
+//   display: flex;
+//   align-items: center;
+//   gap: 8px;
+//   font-size: 0.95rem;
+//   transition: 0.3s;
+//   cursor: pointer;
 
-  &:hover {
-    color: #00bcd4;
-  }
-`;
+//   &:hover {
+//     color: #00bcd4;
+//   }
+// `;
 
-const LogoutButton = styled.button`
-  background: rgba(244, 67, 54, 0.1);
-  color: #f44336;
-  border: 1px solid #f44336;
-  padding: 8px 18px;
-  border-radius: 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: "Cairo", sans-serif;
-  font-weight: bold;
-  transition: 0.3s;
+// const LogoutButton = styled.button`
+//   background: rgba(244, 67, 54, 0.1);
+//   color: #f44336;
+//   border: 1px solid #f44336;
+//   padding: 8px 18px;
+//   border-radius: 12px;
+//   cursor: pointer;
+//   display: flex;
+//   align-items: center;
+//   gap: 8px;
+//   font-family: "Cairo", sans-serif;
+//   font-weight: bold;
+//   transition: 0.3s;
 
-  &:hover {
-    background: #f44336;
-    color: white;
-  }
-`;
+//   &:hover {
+//     background: #f44336;
+//     color: white;
+//   }
+// `;
 
-function HosNavbar() {
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      // بمجرد الخروج، سيقوم App.js تلقائياً بتحويلك لصفحة Login
-    } catch (error) {
-      console.error("Error signing out: ", error);
-    }
-  };
+// function HosNavbar() {
+//   const handleLogout = async () => {
+//     try {
+//       await signOut(auth);
+//       // بمجرد الخروج، سيقوم App.js تلقائياً بتحويلك لصفحة Login
+//     } catch (error) {
+//       console.error("Error signing out: ", error);
+//     }
+//   };
 
-  const scrollToSection = (id) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
-  };
+//   const scrollToSection = (id) => {
+//     const element = document.getElementById(id);
+//     if (element) {
+//       element.scrollIntoView({ behavior: "smooth" });
+//     }
+//   };
 
-  return (
-    <Nav>
-      <Logo>
-        <FaHospital size={28} />
-        <span>بوابة المستشفى</span>
-      </Logo>
+//   return (
+//     <Nav>
+//       <Logo>
+//         <FaHospital size={28} />
+//         <span>بوابة المستشفى</span>
+//       </Logo>
 
-      <NavLinks>
-        <NavLink onClick={() => scrollToSection("request-form")}>
-          <FaClipboardList /> طلب وحدات دم
-        </NavLink>
-        <NavLink onClick={() => scrollToSection("order-status")}>
-          <FaTruckLoading /> متابعة الطلبات
-        </NavLink>
-      </NavLinks>
+//       <NavLinks>
+//         <NavLink onClick={() => scrollToSection("request-form")}>
+//           <FaClipboardList /> طلب وحدات دم
+//         </NavLink>
+//         <NavLink onClick={() => scrollToSection("order-status")}>
+//           <FaTruckLoading /> متابعة الطلبات
+//         </NavLink>
+//       </NavLinks>
 
-      <LogoutButton onClick={handleLogout}>
-        <FaSignOutAlt /> تسجيل الخروج
-      </LogoutButton>
-    </Nav>
-  );
-}
+//       <LogoutButton onClick={handleLogout}>
+//         <FaSignOutAlt /> تسجيل الخروج
+//       </LogoutButton>
+//     </Nav>
+//   );
+// }
 
-export default HosNavbar;
+// export default HosNavbar;
