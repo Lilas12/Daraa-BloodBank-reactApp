@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import styled, { keyframes } from "styled-components";
+import styled, { keyframes } from "styled-components"; // La till css här
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaFilePdf,
@@ -13,7 +13,11 @@ import {
   FaListUl,
 } from "react-icons/fa";
 
-const countUp = keyframes` from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } `;
+// Denna används nu i StatValue nedan
+const countUp = keyframes`
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+`;
 
 const PageContainer = styled.div`
   padding: 3rem 2rem;
@@ -23,6 +27,12 @@ const PageContainer = styled.div`
   font-family: "Cairo", sans-serif;
   background: #f4f7fa;
   min-height: 100vh;
+`;
+
+// Ny styled component som använder animationen!
+const StatValue = styled.h2`
+  margin: 10px 0;
+  animation: ${countUp} 0.6s ease-out forwards;
 `;
 
 const TabButton = styled.button`
@@ -80,7 +90,7 @@ const Toast = styled(motion.div)`
 `;
 
 const ReportsPage = () => {
-  const [activeTab, setActiveTab] = useState("overview"); // overview eller details
+  const [activeTab, setActiveTab] = useState("overview");
   const [isExporting, setIsExporting] = useState(false);
   const [showToast, setShowToast] = useState(false);
 
@@ -157,12 +167,12 @@ const ReportsPage = () => {
             >
               <GlassCard whileHover={{ y: -5 }}>
                 <FaUsers size={24} color="#3b82f6" />
-                <h2 style={{ margin: "10px 0" }}>1,402</h2>
+                <StatValue>1,402</StatValue> {/* Här används animationen nu! */}
                 <p style={{ margin: 0, color: "#64748b" }}>إجمالي المتبرعين</p>
               </GlassCard>
               <GlassCard whileHover={{ y: -5 }}>
                 <FaCalendarCheck size={24} color="#8b5cf6" />
-                <h2 style={{ margin: "10px 0" }}>85%</h2>
+                <StatValue>85%</StatValue>
                 <p style={{ margin: 0, color: "#64748b" }}>
                   معدل اكتمال المواعيد
                 </p>
@@ -172,7 +182,7 @@ const ReportsPage = () => {
                 style={{ borderRight: "4px solid #ef4444" }}
               >
                 <FaExclamationTriangle size={24} color="#ef4444" />
-                <h2 style={{ margin: "10px 0" }}>2</h2>
+                <StatValue>2</StatValue>
                 <p style={{ margin: 0, color: "#64748b" }}>تنبيهات حرجة</p>
               </GlassCard>
             </div>
@@ -181,7 +191,6 @@ const ReportsPage = () => {
               <h3 style={{ marginBottom: "2rem" }}>
                 توزيع المخزون الاستراتيجي
               </h3>
-
               <div style={{ display: "grid", gap: "25px" }}>
                 {inventoryData.map((item, i) => (
                   <div key={i}>
@@ -299,7 +308,6 @@ const ReportsPage = () => {
             </>
           )}
         </ExportButton>
-
         <ExportButton
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
@@ -336,7 +344,7 @@ const ReportsPage = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              zUnit: 3000,
+              zIndex: 3000,
             }}
           >
             <div style={{ textAlign: "center" }}>
