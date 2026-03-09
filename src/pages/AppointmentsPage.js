@@ -8,25 +8,45 @@ const fadeInUp = keyframes`
 `;
 
 const PageContainer = styled.div`
-  padding: 40px;
+  padding: 15px; /* Mindre padding på mobil */
   background: #f8fafc;
   min-height: 100vh;
   direction: rtl;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+
+  @media (min-width: 768px) {
+    padding: 40px;
+  }
 `;
 
 const HeaderSection = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column; /* Stapla vertikalt på mobil */
+  gap: 20px;
   margin-bottom: 30px;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
 `;
 
 const StatsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  margin-bottom: 40px;
+  grid-template-columns: 1fr; /* En kolumn på mobil */
+  gap: 15px;
+  margin-bottom: 30px;
+
+  @media (min-width: 480px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 40px;
+  }
 `;
 
 const StatCard = styled.div`
@@ -37,7 +57,7 @@ const StatCard = styled.div`
   border-bottom: 4px solid ${(props) => props.color};
   text-align: center;
   .value {
-    font-size: 2rem;
+    font-size: 1.8rem;
     font-weight: bold;
     color: #1e293b;
   }
@@ -47,25 +67,66 @@ const StatCard = styled.div`
   }
 `;
 
+// --- RESPONSIV TABELL-STRATEGI ---
 const TableContainer = styled.div`
   background: white;
   border-radius: 25px;
-  padding: 20px;
+  padding: 15px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+
+  @media (min-width: 768px) {
+    padding: 20px;
+  }
 `;
 
 const StyledTable = styled.table`
   width: 100%;
   border-collapse: collapse;
+
+  /* Dölj tabellhuvudet på mobil */
+  thead {
+    @media (max-width: 767px) {
+      display: none;
+    }
+  }
+
+  /* Gör rader till "kort" på mobil */
+  tr {
+    @media (max-width: 767px) {
+      display: block;
+      border: 1px solid #f1f5f9;
+      border-radius: 15px;
+      margin-bottom: 15px;
+      padding: 10px;
+    }
+  }
+
   th {
     padding: 15px;
     text-align: right;
     color: #94a3b8;
     border-bottom: 2px solid #f1f5f9;
   }
+
   td {
     padding: 15px;
     border-bottom: 1px solid #f1f5f9;
+
+    @media (max-width: 767px) {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: none;
+      padding: 8px 5px;
+      text-align: left;
+
+      /* Lägg till etiketter för data på mobil */
+      &:before {
+        content: attr(data-label);
+        font-weight: bold;
+        color: #94a3b8;
+      }
+    }
   }
 `;
 
@@ -76,6 +137,7 @@ const StatusBadge = styled.span`
   font-weight: bold;
   background: ${(props) => props.bg};
   color: ${(props) => props.color};
+  white-space: nowrap;
 `;
 
 const ActionButton = styled.button`
@@ -89,9 +151,15 @@ const ActionButton = styled.button`
     props.primary ? "#3b82f6" : props.success ? "#10b981" : "#f1f5f9"};
   color: ${(props) => (props.primary || props.success ? "white" : "#1e293b")};
   margin-left: 5px;
+
   &:hover {
     transform: translateY(-2px);
     opacity: 0.9;
+  }
+
+  @media (max-width: 480px) {
+    padding: 8px 12px;
+    font-size: 0.85rem;
   }
 `;
 
@@ -104,14 +172,21 @@ const ModalOverlay = styled.div`
   align-items: center;
   z-index: 1000;
   backdrop-filter: blur(5px);
+  padding: 20px; /* Padding så modalen inte nuddar skärmkant på mobil */
 `;
 
 const Modal = styled.div`
   background: white;
-  padding: 40px;
+  padding: 25px;
   border-radius: 30px;
-  width: 500px;
+  width: 100%;
+  max-width: 500px; /* Maxbredd på dator */
   animation: ${fadeInUp} 0.3s ease;
+
+  @media (min-width: 768px) {
+    padding: 40px;
+  }
+
   .form-group {
     margin-bottom: 15px;
   }
@@ -126,6 +201,7 @@ const Modal = styled.div`
     padding: 12px;
     border: 1px solid #e2e8f0;
     border-radius: 10px;
+    box-sizing: border-box; /* Viktigt för att padding inte ska öka bredden */
   }
 `;
 
@@ -194,12 +270,12 @@ const AppointmentsPage = () => {
     <PageContainer>
       <HeaderSection>
         <div>
-          <h1 style={{ fontSize: "2rem", margin: 0 }}>📅 إدارة المواعيد</h1>
+          <h1 style={{ fontSize: "1.8rem", margin: 0 }}>📅 إدارة المواعيد</h1>
           <p style={{ color: "#64748b" }}>
             قم بإدارة مواعيد المتبرعين وتحديث حالتهم
           </p>
         </div>
-        <div>
+        <div style={{ display: "flex", gap: "10px" }}>
           <ActionButton onClick={() => navigate("/")}>الرئيسية</ActionButton>
           <ActionButton primary onClick={() => setShowModal(true)}>
             ➕ موعد جديد
@@ -253,25 +329,25 @@ const AppointmentsPage = () => {
                 key={appt.id}
                 style={{ opacity: appt.status === "completed" ? 0.6 : 1 }}
               >
-                <td>
+                <td data-label="المتبرع">
                   <div style={{ fontWeight: "bold" }}>{appt.name}</div>
                   <div style={{ fontSize: "0.8rem", color: "#64748b" }}>
                     {appt.phone}
                   </div>
                 </td>
-                <td>
+                <td data-label="الفصيلة">
                   <StatusBadge bg="#f1f5f9" color="#ef4444">
                     {appt.type}
                   </StatusBadge>
                 </td>
-                <td>
+                <td data-label="التاريخ">
                   {appt.date} |{" "}
                   <span style={{ color: "#3b82f6" }}>{appt.time}</span>
                 </td>
-                <td>
+                <td data-label="الحالة">
                   {appt.status === "waiting" ? (
                     <StatusBadge bg="#fef3c7" color="#92400e">
-                      ⏳ قيد الانتظar
+                      ⏳ قيد الانتظار
                     </StatusBadge>
                   ) : (
                     <StatusBadge bg="#dcfce7" color="#166534">
@@ -279,13 +355,15 @@ const AppointmentsPage = () => {
                     </StatusBadge>
                   )}
                 </td>
-                <td>
-                  <ActionButton success onClick={() => toggleStatus(appt.id)}>
-                    {appt.status === "waiting" ? "🏆 إكمال" : "🔄 تراجع"}
-                  </ActionButton>
-                  <ActionButton onClick={() => deleteAppt(appt.id)}>
-                    🗑️
-                  </ActionButton>
+                <td data-label="الإجراءات">
+                  <div style={{ display: "flex" }}>
+                    <ActionButton success onClick={() => toggleStatus(appt.id)}>
+                      {appt.status === "waiting" ? "إكمال" : "تراجع"}
+                    </ActionButton>
+                    <ActionButton onClick={() => deleteAppt(appt.id)}>
+                      🗑️
+                    </ActionButton>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -349,7 +427,7 @@ const AppointmentsPage = () => {
               </div>
               <div style={{ display: "flex", gap: "10px", marginTop: "30px" }}>
                 <ActionButton primary type="submit" style={{ flex: 1 }}>
-                  حفظ الموعد
+                  حفظ
                 </ActionButton>
                 <ActionButton
                   type="button"

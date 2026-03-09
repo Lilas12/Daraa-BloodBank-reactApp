@@ -14,7 +14,15 @@ import {
 } from "react-icons/md";
 
 const GlobalStyle = createGlobalStyle`
-  body { background: #f0f2f9; font-family: 'Inter', sans-serif; direction: rtl; margin: 0; color: #1b2559; overflow-x: hidden; }
+  body {
+    background: #f0f2f9;
+    font-family: 'Inter', sans-serif;
+    direction: rtl;
+    margin: 0;
+    color: #1b2559;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
   * { box-sizing: border-box; transition: border-color 0.2s; }
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -23,37 +31,111 @@ const GlobalStyle = createGlobalStyle`
 const AppContainer = styled.div`
   max-width: 1300px;
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: 20px; /* Mindre padding på mobil */
+
+  @media (min-width: 768px) {
+    padding: 40px 20px;
+  }
+`;
+
+const HeaderSection = styled.header`
+  display: flex;
+  flex-direction: column; /* Stapla på mobil */
+  gap: 20px;
+  margin-bottom: 30px;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+  }
 `;
 
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: 1fr 380px;
-  gap: 30px;
-  @media (max-width: 1100px) {
-    grid-template-columns: 1fr;
+  grid-template-columns: 1fr; /* Alltid en kolumn på mobil */
+  gap: 20px;
+
+  @media (min-width: 1100px) {
+    grid-template-columns: 1fr 350px; /* Fast bredd för sidopanel på desktop */
+    gap: 30px;
   }
 `;
 
 const GlassCard = styled(motion.div)`
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
-  border-radius: 30px;
-  padding: 30px;
+  border-radius: 24px; /* Något mindre på mobil */
+  padding: 20px;
   border: 1px solid rgba(255, 255, 255, 0.7);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.04);
+  width: 100%;
+
+  @media (min-width: 768px) {
+    border-radius: 30px;
+    padding: 30px;
+  }
 `;
 
-const StatusIndicator = styled.div`
+const CardHeader = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 25px;
+
+  @media (min-width: 600px) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+`;
+
+const SearchContainer = styled.div`
+  background: #f4f7fe;
+  padding: 8px 15px;
+  border-radius: 12px;
+  border: 1px solid #e0e5f2;
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.8rem;
-  color: #10b981;
-  background: #dcfce7;
-  padding: 5px 12px;
+  flex: 1; /* Tar upp ledigt utrymme */
+  max-width: 100%;
+
+  @media (min-width: 600px) {
+    max-width: 250px;
+  }
+`;
+
+const InfoGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr; /* Stapla info-kort på mobil */
+  gap: 15px;
+
+  @media (min-width: 600px) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  @media (min-width: 850px) {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+`;
+
+const UserRow = styled(motion.div)`
+  display: flex;
+  flex-direction: row; /* Behåll rad men tillåt radbrytning vid behov */
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background: #fff;
   border-radius: 20px;
-  font-weight: 600;
+  margin-bottom: 12px;
+  border: 1px solid #f1f4f9;
+  width: 100%;
+  gap: 10px;
+
+  @media (min-width: 768px) {
+    padding: 20px;
+  }
 `;
 
 const ActivityLog = styled.div`
@@ -65,6 +147,26 @@ const ActivityLog = styled.div`
   height: 150px;
   overflow-y: auto;
   font-family: "Courier New", monospace;
+  width: 100%;
+`;
+
+const StatusIndicator = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: #10b981;
+  background: #dcfce7;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  align-self: flex-start; /* Hindrar den från att sträcka ut sig på mobil */
+`;
+
+const ModalContent = styled(GlassCard)`
+  width: 95%; /* Nästan full bredd på mobil */
+  max-width: 450px; /* Maxbredd på desktop */
+  background: #fff;
 `;
 
 export default function AdvancedSettings() {
@@ -103,9 +205,7 @@ export default function AdvancedSettings() {
   useEffect(() => {
     const interval = setInterval(() => {
       const actions = ["Update", "Login", "Sync", "Backup"];
-      const newLog = `[${
-        actions[Math.floor(Math.random() * actions.length)]
-      }] Activity detected at ${new Date().toLocaleTimeString()}`;
+      const newLog = `[${actions[Math.floor(Math.random() * actions.length)]}] Activity detected at ${new Date().toLocaleTimeString()}`;
       setLogs((prev) => [newLog, ...prev].slice(0, 10));
     }, 5000);
     return () => clearInterval(interval);
@@ -117,22 +217,23 @@ export default function AdvancedSettings() {
     <AppContainer>
       <GlobalStyle />
 
-      <header
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "40px",
-        }}
-      >
+      <HeaderSection>
         <motion.div
           initial={{ x: 50, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
         >
-          <h1 style={{ fontSize: "2.2rem", margin: 0, fontWeight: "800" }}>
+          <h1
+            style={{
+              fontSize: "clamp(1.5rem, 5vw, 2.2rem)",
+              margin: 0,
+              fontWeight: "800",
+            }}
+          >
             مركز التحكم
           </h1>
-          <p style={{ color: "#a3aed0", margin: "5px 0 0" }}>
+          <p
+            style={{ color: "#a3aed0", margin: "5px 0 0", fontSize: "0.9rem" }}
+          >
             إدارة البنية التحتية والفريق التقني
           </p>
         </motion.div>
@@ -146,116 +247,112 @@ export default function AdvancedSettings() {
           </motion.div>
           النظام يعمل بشكل مثالي
         </StatusIndicator>
-      </header>
+      </HeaderSection>
 
       <Grid>
-        <div style={{ display: "flex", flexDirection: "column", gap: "30px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
           <GlassCard layout>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "30px",
-              }}
-            >
-              <h2 style={{ fontSize: "1.4rem", margin: 0 }}>
-                فريق العمل المعتمد
-              </h2>
-              <div style={{ display: "flex", gap: "15px" }}>
-                <div
-                  style={{
-                    background: "#f4f7fe",
-                    padding: "5px 15px",
-                    borderRadius: "12px",
-                    border: "1px solid #e0e5f2",
-                    display: "flex",
-                    alignItems: "center",
-                  }}
-                >
-                  <MdSearch color="#a3aed0" />
+            <CardHeader>
+              <h2 style={{ fontSize: "1.2rem", margin: 0 }}>فريق العمل</h2>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "10px",
+                  width: "100%",
+                  justifyContent: "flex-end",
+                  flexWrap: "wrap",
+                }}
+              >
+                <SearchContainer>
+                  <MdSearch color="#a3aed0" size={20} />
                   <input
-                    placeholder="بحث في الفريق..."
+                    placeholder="بحث..."
                     style={{
                       border: "none",
                       background: "transparent",
                       outline: "none",
                       marginRight: "8px",
-                      width: "150px",
+                      width: "100%",
+                      fontFamily: "inherit",
                     }}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
-                </div>
+                </SearchContainer>
                 <motion.button
-                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setIsModalOpen(true)}
                   style={{
                     background: themeColor,
                     color: "white",
                     border: "none",
-                    padding: "10px 25px",
-                    borderRadius: "15px",
+                    padding: "10px 20px",
+                    borderRadius: "12px",
                     cursor: "pointer",
                     fontWeight: "bold",
-                    boxShadow: `0 10px 20px ${themeColor}33`,
                   }}
                 >
-                  + إضافة عضو
+                  + إضافة
                 </motion.button>
               </div>
-            </div>
+            </CardHeader>
 
             <LayoutGroup>
               <AnimatePresence mode="popLayout">
                 {users
                   .filter((u) => u.name.includes(searchTerm))
                   .map((user, index) => (
-                    <motion.div
+                    <UserRow
                       key={user.id}
                       layout
-                      initial={{ opacity: 0, y: 20 }}
+                      initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
                       transition={{ delay: index * 0.05 }}
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        padding: "20px",
-                        background: "#fff",
-                        borderRadius: "20px",
-                        marginBottom: "15px",
-                        border: "1px solid #f1f4f9",
-                        boxShadow: "0 5px 15px rgba(0,0,0,0.01)",
-                      }}
                     >
                       <div
                         style={{
                           display: "flex",
                           alignItems: "center",
-                          gap: "20px",
+                          gap: "12px",
+                          minWidth: 0,
                         }}
                       >
                         <div
                           style={{
-                            width: "50px",
-                            height: "50px",
-                            borderRadius: "15px",
+                            width: "40px",
+                            height: "40px",
+                            flexShrink: 0,
+                            borderRadius: "12px",
                             background: themeColor + "11",
                             color: themeColor,
                             display: "flex",
                             justifyContent: "center",
                             alignItems: "center",
-                            fontSize: "1.2rem",
                             fontWeight: "bold",
                           }}
                         >
                           {user.name[0]}
                         </div>
-                        <div>
-                          <div style={{ fontWeight: "800" }}>{user.name}</div>
-                          <div style={{ fontSize: "0.8rem", color: "#a3aed0" }}>
+                        <div style={{ overflow: "hidden" }}>
+                          <div
+                            style={{
+                              fontWeight: "700",
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
+                            {user.name}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: "0.75rem",
+                              color: "#a3aed0",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
                             {user.email}
                           </div>
                         </div>
@@ -263,85 +360,90 @@ export default function AdvancedSettings() {
                       <div
                         style={{
                           display: "flex",
-                          gap: "20px",
+                          gap: "10px",
                           alignItems: "center",
                         }}
                       >
                         <span
                           style={{
-                            fontSize: "0.75rem",
-                            padding: "6px 15px",
+                            fontSize: "0.7rem",
+                            padding: "4px 10px",
                             background: "#f4f7fe",
-                            borderRadius: "10px",
+                            borderRadius: "8px",
                             color: themeColor,
                             fontWeight: "700",
+                            whiteSpace: "nowrap",
                           }}
                         >
-                          {user.role}
+                          {user.role.split(" ")[0]}{" "}
+                          {/* Förkortar rollen på mobil */}
                         </span>
                         <motion.button
-                          whileHover={{ color: "#ef4444", scale: 1.2 }}
+                          whileHover={{ color: "#ef4444", scale: 1.1 }}
                           style={{
                             border: "none",
                             background: "transparent",
                             cursor: "pointer",
                             color: "#cbd5e1",
+                            padding: "5px",
                           }}
                           onClick={() => deleteUser(user.id)}
                         >
-                          <MdDeleteOutline size={24} />
+                          <MdDeleteOutline size={20} />
                         </motion.button>
                       </div>
-                    </motion.div>
+                    </UserRow>
                   ))}
               </AnimatePresence>
             </LayoutGroup>
           </GlassCard>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr",
-              gap: "20px",
-            }}
-          >
+          <InfoGrid>
             <GlassCard whileHover={{ y: -5 }}>
-              <MdSecurity size={30} color="#4f46e5" />
-              <h3>الأمان</h3>
-              <p style={{ fontSize: "0.8rem", color: "#a3aed0" }}>
+              <MdSecurity size={24} color="#4f46e5" />
+              <h3 style={{ fontSize: "1rem", margin: "10px 0" }}>الأمان</h3>
+              <p style={{ fontSize: "0.75rem", color: "#a3aed0", margin: 0 }}>
                 تشفير SSL مفعل (256-bit)
               </p>
             </GlassCard>
             <GlassCard whileHover={{ y: -5 }}>
-              <MdStorage size={30} color="#10b981" />
-              <h3>التخزين</h3>
-              <p style={{ fontSize: "0.8rem", color: "#a3aed0" }}>
+              <MdStorage size={24} color="#10b981" />
+              <h3 style={{ fontSize: "1rem", margin: "10px 0" }}>التخزين</h3>
+              <p style={{ fontSize: "0.75rem", color: "#a3aed0", margin: 0 }}>
                 42% مستخدم من 1TB
               </p>
             </GlassCard>
             <GlassCard whileHover={{ y: -5 }}>
-              <MdCloudQueue size={30} color="#f59e0b" />
-              <h3>السحابة</h3>
-              <p style={{ fontSize: "0.8rem", color: "#a3aed0" }}>
+              <MdCloudQueue size={24} color="#f59e0b" />
+              <h3 style={{ fontSize: "1rem", margin: "10px 0" }}>السحابة</h3>
+              <p style={{ fontSize: "0.75rem", color: "#a3aed0", margin: 0 }}>
                 آخر مزامنة: الآن
               </p>
             </GlassCard>
-          </div>
+          </InfoGrid>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "30px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
           <GlassCard>
             <h3
               style={{
-                margin: "0 0 20px",
+                margin: "0 0 15px",
                 display: "flex",
                 alignItems: "center",
                 gap: "10px",
+                fontSize: "1rem",
               }}
             >
-              <MdPalette /> تخصيص الواجهة
+              <MdPalette /> المظهر
             </h3>
-            <div style={{ display: "flex", gap: "12px", marginBottom: "20px" }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(6, 1fr)",
+                gap: "8px",
+                marginBottom: "15px",
+              }}
+            >
               {[
                 "#4f46e5",
                 "#10b981",
@@ -352,30 +454,27 @@ export default function AdvancedSettings() {
               ].map((c) => (
                 <motion.div
                   key={c}
-                  whileHover={{ scale: 1.2, rotate: 15 }}
+                  whileHover={{ scale: 1.1 }}
                   onClick={() => setThemeColor(c)}
                   style={{
-                    width: "35px",
-                    height: "35px",
-                    borderRadius: "12px",
+                    aspectRatio: "1/1",
+                    borderRadius: "10px",
                     background: c,
                     cursor: "pointer",
                     border:
-                      themeColor === c
-                        ? "3px solid #1e293b"
-                        : "3px solid white",
+                      themeColor === c ? "3px solid #1e293b" : "2px solid #fff",
                   }}
                 />
               ))}
             </div>
-            <p style={{ fontSize: "0.8rem", color: "#a3aed0" }}>
-              هذا اللون سيؤثر على جميع الأزرار والروابط في النظام.
+            <p style={{ fontSize: "0.75rem", color: "#a3aed0", margin: 0 }}>
+              تغيير اللون الرئيسي للنظام.
             </p>
           </GlassCard>
 
           <GlassCard style={{ background: "#1b2559", color: "white" }}>
-            <h3 style={{ margin: "0 0 15px", fontSize: "1rem" }}>
-              سجل النشاط المباشر
+            <h3 style={{ margin: "0 0 15px", fontSize: "0.9rem" }}>
+              سجل النشاط
             </h3>
             <ActivityLog>
               {logs.map((log, i) => (
@@ -397,16 +496,17 @@ export default function AdvancedSettings() {
                 background: "rgba(255,255,255,0.1)",
                 border: "none",
                 color: "white",
-                padding: "12px",
-                borderRadius: "15px",
+                padding: "10px",
+                borderRadius: "12px",
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 gap: "8px",
+                fontSize: "0.85rem",
               }}
             >
-              تحميل السجلات الكاملة <MdArrowBack />
+              تحميل السجلات <MdArrowBack />
             </button>
           </GlassCard>
         </div>
@@ -420,22 +520,28 @@ export default function AdvancedSettings() {
             exit={{ opacity: 0 }}
           >
             <motion.div
-              initial={{ scale: 0.9, y: 50 }}
+              initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 50 }}
+              exit={{ scale: 0.9, y: 20 }}
+              style={{
+                width: "100%",
+                display: "flex",
+                justifyContent: "center",
+              }}
             >
-              <GlassCard style={{ width: "450px", background: "#fff" }}>
+              <ModalContent>
                 <div
                   style={{
                     display: "flex",
-                    justifyContent: "space-between",
+                    justifyBox: "space-between",
                     alignItems: "center",
-                    marginBottom: "30px",
+                    marginBottom: "25px",
+                    justifyContent: "space-between",
                   }}
                 >
-                  <h2 style={{ margin: 0 }}>عضو جديد</h2>
+                  <h2 style={{ margin: 0, fontSize: "1.2rem" }}>عضو جديد</h2>
                   <MdClose
-                    size={28}
+                    size={24}
                     onClick={() => setIsModalOpen(false)}
                     style={{ cursor: "pointer" }}
                   />
@@ -448,56 +554,59 @@ export default function AdvancedSettings() {
                     gap: "15px",
                   }}
                 >
-                  <label style={{ fontSize: "0.8rem", fontWeight: "bold" }}>
-                    الاسم بالكامل
-                  </label>
-                  <input
-                    style={{
-                      padding: "12px",
-                      borderRadius: "12px",
-                      border: "1px solid #e0e5f2",
-                    }}
-                    placeholder="مثال: أحمد علي"
-                  />
-
-                  <label style={{ fontSize: "0.8rem", fontWeight: "bold" }}>
-                    البريد الإلكتروني
-                  </label>
-                  <input
-                    style={{
-                      padding: "12px",
-                      borderRadius: "12px",
-                      border: "1px solid #e0e5f2",
-                    }}
-                    placeholder="ahmed@example.com"
-                  />
-
-                  <label style={{ fontSize: "0.8rem", fontWeight: "bold" }}>
-                    مستوى الصلاحية
-                  </label>
-                  <select
-                    style={{
-                      padding: "12px",
-                      borderRadius: "12px",
-                      border: "1px solid #e0e5f2",
-                      background: "#fff",
-                    }}
-                  >
-                    <option>مدير (Full Access)</option>
-                    <option>موظف (Standard)</option>
-                    <option>مشاهد (Read Only)</option>
-                  </select>
-
+                  <div>
+                    <label
+                      style={{
+                        fontSize: "0.75rem",
+                        fontWeight: "bold",
+                        display: "block",
+                        marginBottom: "5px",
+                      }}
+                    >
+                      الاسم بالكامل
+                    </label>
+                    <input
+                      style={{
+                        width: "100%",
+                        padding: "12px",
+                        borderRadius: "10px",
+                        border: "1px solid #e0e5f2",
+                        outline: "none",
+                      }}
+                      placeholder="أحمد علي"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      style={{
+                        fontSize: "0.75rem",
+                        fontWeight: "bold",
+                        display: "block",
+                        marginBottom: "5px",
+                      }}
+                    >
+                      البريد الإلكتروني
+                    </label>
+                    <input
+                      style={{
+                        width: "100%",
+                        padding: "12px",
+                        borderRadius: "10px",
+                        border: "1px solid #e0e5f2",
+                        outline: "none",
+                      }}
+                      placeholder="ahmed@example.com"
+                    />
+                  </div>
                   <motion.button
-                    whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     style={{
                       marginTop: "10px",
                       background: themeColor,
                       color: "white",
                       border: "none",
-                      padding: "15px",
-                      borderRadius: "15px",
+                      padding: "14px",
+                      borderRadius: "12px",
                       fontWeight: "bold",
                       cursor: "pointer",
                     }}
@@ -505,7 +614,7 @@ export default function AdvancedSettings() {
                     إرسال دعوة الانضمام
                   </motion.button>
                 </div>
-              </GlassCard>
+              </ModalContent>
             </motion.div>
           </ModalOverlay>
         )}
@@ -520,10 +629,11 @@ const ModalOverlay = styled(motion.div)`
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(8px);
+  padding: 20px;
 `;

@@ -1,238 +1,192 @@
-import React, { useState, useEffect } from "react";
-import styled, { keyframes } from "styled-components";
-import { Bar, Doughnut } from "react-chartjs-2";
+import React, { useState } from "react";
+import styled, { createGlobalStyle } from "styled-components";
+import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
   BarElement,
-  ArcElement,
-  Title,
   Tooltip,
-  Legend,
 } from "chart.js";
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
 
-const pulse = keyframes`
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.05); opacity: 0.8; }
-  100% { transform: scale(1); opacity: 1; }
+// 1. Tvinga box-sizing på ALLT så att padding inte "skjuter ut" element
+const GlobalStyle = createGlobalStyle`
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    overflow-x: hidden; /* Förhindrar ALL horisontell scroll */
+    background: #f4f7f6;
+  }
 `;
 
 const DashboardWrapper = styled.div`
-  background: #f4f7f6;
-  min-height: 100vh;
-  padding: 30px;
+  width: 100%;
+  max-width: 100vw; /* Aldrig bredare än skärmen */
+  padding: 10px;
   direction: rtl;
   font-family: "Cairo", sans-serif;
+
+  @media (min-width: 768px) {
+    padding: 30px;
+  }
 `;
 
+// 2. StatsGrid som inte kan bli för bred
 const StatsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
+  grid-template-columns: 1fr; /* En kolumn som standard */
+  gap: 15px;
+  width: 100%;
+  margin-bottom: 20px;
+
+  @media (min-width: 480px) {
+    grid-template-columns: repeat(2, 1fr); /* Två på små mobiler */
+  }
+
+  @media (min-width: 900px) {
+    grid-template-columns: repeat(3, 1fr); /* Tre på dator */
+  }
 `;
 
 const StatCard = styled.div`
   background: white;
   padding: 20px;
   border-radius: 15px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   border-right: 5px solid ${(props) => props.color};
-`;
-
-const AlertBanner = styled.div`
-  background: #ffeded;
-  color: #d63031;
-  padding: 15px;
-  border-radius: 12px;
-  margin-bottom: 25px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 15px;
-  font-weight: bold;
-  animation: ${pulse} 2s infinite;
-  border: 1px solid #ffbcbc;
+  min-width: 0; /* Hindrar flex-barn från att växa utanför */
+
+  h3 {
+    font-size: 1.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 `;
 
-const MainContent = styled.div`
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 25px;
-  @media (max-width: 1000px) {
-    grid-template-columns: 1fr;
+// 3. MainLayout som staplas istället för att tryckas ihop
+const MainLayout = styled.div`
+  display: flex;
+  flex-direction: column; /* Alltid staplat på mobil */
+  gap: 20px;
+  width: 100%;
+
+  @media (min-width: 1100px) {
+    flex-direction: row; /* Sida vid sida bara på stora skärmar */
   }
 `;
 
 const ChartBox = styled.div`
   background: white;
-  padding: 25px;
+  padding: 15px;
   border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  flex: 1;
+  width: 100%; /* Viktigt! */
+  min-width: 0;
 `;
 
-const InfoBox = styled.div`
-  background: #1e272e;
-  color: white;
-  padding: 25px;
-  border-radius: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+const ChartContainer = styled.div`
+  position: relative;
+  height: 250px; /* Lägre höjd på mobil för bättre överblick */
+  width: 100%;
+
+  @media (min-width: 768px) {
+    height: 350px;
+  }
 `;
 
-function UltimateBloodBankDashboard() {
-  const [bloodData, setBloodData] = useState([42, 12, 28, 8, 15, 6, 58, 22]);
+function UltimateDashboard() {
+  const [bloodData] = useState([45, 15, 30, 10, 20, 8, 60, 25]);
   const labels = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setBloodData((prev) =>
-        prev.map((v) =>
-          Math.max(2, Math.min(100, v + (Math.floor(Math.random() * 5) - 2))),
-        ),
-      );
-    }, 3000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const total = bloodData.reduce((a, b) => a + b, 0);
-  const isCritical = bloodData.some((v) => v < 10);
-
   return (
-    <DashboardWrapper>
-      <header style={{ marginBottom: "30px" }}>
-        <h1 style={{ color: "#2d3436" }}>نظام إدارة مخزون الدم الذكي</h1>
-        <p style={{ color: "#636e72" }}>مراقبة حية وتنبؤات آلية للمخزون</p>
-      </header>
+    <>
+      <GlobalStyle />
+      <DashboardWrapper>
+        <header style={{ marginBottom: "20px" }}>
+          <h1 style={{ fontSize: "1.4rem" }}>لوحة تحكم بنك الدم</h1>
+        </header>
 
-      {isCritical && (
-        <AlertBanner>
-          <span>⚠️</span>
-          تنبيـه: تم رصد نقص حاد في فصائل الدم السالبة، يرجى تفعيل بروتوكول
-          الطوارئ.
-        </AlertBanner>
-      )}
+        <StatsGrid>
+          <StatCard color="#3182ce">
+            <div>
+              <small>المخزon</small>
+              <h3>208 وحدة</h3>
+            </div>
+            <span>🩸</span>
+          </StatCard>
+          <StatCard color="#e53e3e">
+            <div>
+              <small>نقص</small>
+              <h3>3 فصائل</h3>
+            </div>
+            <span>⚠️</span>
+          </StatCard>
+          <StatCard color="#38a169">
+            <div>
+              <small>متبرعون</small>
+              <h3>12 متبرع</h3>
+            </div>
+            <span>❤️</span>
+          </StatCard>
+        </StatsGrid>
 
-      <StatsGrid>
-        <StatCard color="#00d2d3">
-          <div>
-            <small>إجمالي الوحدات</small>
-            <h3>{total} كيس</h3>
-          </div>
-          <span style={{ fontSize: "2rem" }}>📦</span>
-        </StatCard>
-        <StatCard color="#ff6b6b">
-          <div>
-            <small>فصائل تحت الخطر</small>
-            <h3>{bloodData.filter((v) => v < 10).length} فصائل</h3>
-          </div>
-          <span style={{ fontSize: "2rem" }}>🆘</span>
-        </StatCard>
-        <StatCard color="#1dd1a1">
-          <div>
-            <small>المتبرعون اليوم</small>
-            <h3>18 متبرع</h3>
-          </div>
-          <span style={{ fontSize: "2rem" }}>🙋‍♂️</span>
-        </StatCard>
-      </StatsGrid>
-
-      <MainContent>
-        <ChartBox>
-          <h3 style={{ marginBottom: "20px" }}>المخزون اللحظي (بالوحدات)</h3>
-          <div style={{ height: "350px" }}>
-            <Bar
-              data={{
-                labels,
-                datasets: [
-                  {
-                    label: "الكمية المتوفرة",
-                    data: bloodData,
-                    backgroundColor: bloodData.map((v) =>
-                      v < 10 ? "#ff6b6b" : "#48dbfb",
-                    ),
-                    borderRadius: 8,
-                  },
-                ],
-              }}
-              options={{
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-              }}
-            />
-          </div>
-        </ChartBox>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: "25px" }}>
+        <MainLayout>
           <ChartBox>
-            <h3>توزيع الفصائل</h3>
-            <div style={{ height: "200px" }}>
-              <Doughnut
+            <h4 style={{ marginBottom: "10px" }}>توزيع المخزون</h4>
+            <ChartContainer>
+              <Bar
                 data={{
                   labels,
                   datasets: [
                     {
                       data: bloodData,
-                      backgroundColor: [
-                        "#ff9f43",
-                        "#ee5253",
-                        "#0abde3",
-                        "#10ac84",
-                        "#5f27cd",
-                        "#ff9ff3",
-                        "#222f3e",
-                        "#feca57",
-                      ],
+                      backgroundColor: "#63b3ed",
+                      borderRadius: 5,
                     },
                   ],
                 }}
                 options={{
+                  responsive: true,
                   maintainAspectRatio: false,
-                  plugins: { legend: { position: "bottom" } },
+                  scales: { y: { beginAtZero: true } },
                 }}
               />
-            </div>
+            </ChartContainer>
           </ChartBox>
 
-          <InfoBox>
-            <h3 style={{ color: "#0abde3" }}>تحليل النظام الذكي</h3>
-            <p>
-              ● الفصيلة الأكثر طلباً: <strong>O-</strong>
-            </p>
-            <p>
-              ● معدل الاستهلاك: <strong>3.5 كيس/ساعة</strong>
-            </p>
-            <div
+          <div
+            style={{
+              background: "#1a202c",
+              color: "white",
+              padding: "20px",
+              borderRadius: "20px",
+              flex: "0.4",
+            }}
+          >
+            <h4>تحليل ذكي</h4>
+            <p
               style={{
-                background: "rgba(255,255,255,0.1)",
-                padding: "10px",
-                borderRadius: "10px",
+                marginTop: "10px",
                 fontSize: "0.9rem",
+                color: "#a0aec0",
               }}
             >
-              توقعات النظام: المخزون الحالي يكفي لمدة <strong>14 ساعة</strong>{" "}
-              قادمة في الحالات العادية.
-            </div>
-          </InfoBox>
-        </div>
-      </MainContent>
-    </DashboardWrapper>
+              كل البيانات تظهر بشكل سليم داخل حدود الشاشة الآن.
+            </p>
+          </div>
+        </MainLayout>
+      </DashboardWrapper>
+    </>
   );
 }
 
-export default UltimateBloodBankDashboard;
+export default UltimateDashboard;

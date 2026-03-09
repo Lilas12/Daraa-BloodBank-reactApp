@@ -12,6 +12,7 @@ import {
   FaPrint,
 } from "react-icons/fa";
 
+// --- 1. Färger & Animationer ---
 const colors = {
   primary: "#DC143C",
   secondary: "#1E293B",
@@ -28,90 +29,131 @@ const pulseGlow = keyframes`
   100% { box-shadow: 0 0 0 0px rgba(220, 20, 60, 0); }
 `;
 
+// --- 2. Styled Components (Responsiva) ---
 const PageWrapper = styled.div`
   background-color: ${colors.bg};
   min-height: 100vh;
   direction: rtl;
   font-family: "Cairo", sans-serif;
 `;
+
 const Container = styled.div`
   max-width: 1400px;
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: 15px;
+  @media (min-width: 768px) {
+    padding: 40px 20px;
+  }
 `;
+
 const StatsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 25px;
-  margin-bottom: 40px;
+  grid-template-columns: 1fr;
+  gap: 15px;
+  margin-bottom: 25px;
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px;
+    margin-bottom: 40px;
+  }
 `;
+
 const StatCard = styled.div`
   background: ${(props) =>
     props.gradient
       ? `linear-gradient(135deg, ${colors.primary}, #8B0000)`
       : colors.white};
-  padding: 30px;
-  border-radius: 24px;
+  padding: 20px;
+  border-radius: 20px;
   color: ${(props) => (props.gradient ? "white" : colors.secondary)};
-  box-shadow: ${(props) =>
-    props.gradient
-      ? "0 15px 30px rgba(220, 20, 60, 0.2)"
-      : "0 10px 20px rgba(0,0,0,0.05)"};
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   border-right: ${(props) =>
     props.border ? `8px solid ${colors.success}` : "none"};
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+
+  @media (min-width: 768px) {
+    padding: 30px;
+    border-radius: 24px;
+  }
 `;
+
 const Section = styled.div`
   background: ${colors.white};
-  border-radius: 24px;
-  padding: 30px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  margin-bottom: 40px;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  margin-bottom: 25px;
   border: 1px solid ${colors.border};
+  @media (min-width: 768px) {
+    padding: 30px;
+    border-radius: 24px;
+    margin-bottom: 40px;
+  }
 `;
+
 const SectionTitle = styled.h3`
-  margin: 0 0 25px 0;
-  color: ${(props) => props.color || colors.secondary};
-  font-size: 22px;
+  margin: 0 0 20px 0;
+  color: ${colors.secondary};
+  font-size: 18px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  @media (min-width: 768px) {
+    font-size: 22px;
+  }
 `;
+
 const ExternalOrderRow = styled(motion.div)`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
+  flex-direction: column;
+  gap: 15px;
+  padding: 15px;
   border-radius: 18px;
-  border: 1px solid
-    ${(props) => (props.status === "accepted" ? "#D1FAE5" : "#FEE2E2")};
   background: ${(props) =>
     props.status === "accepted" ? "#F0FDF4" : "#FFF5F5"};
+  border: 1px solid
+    ${(props) => (props.status === "accepted" ? "#D1FAE5" : "#FEE2E2")};
   margin-bottom: 15px;
   animation: ${(props) => (props.status === "pending" ? pulseGlow : "none")} 2s
     infinite;
+
+  @media (min-width: 640px) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+  }
 `;
+
+const TableContainer = styled.div`
+  overflow-x: auto;
+  margin: 0 -15px;
+  padding: 0 15px;
+  @media (min-width: 768px) {
+    margin: 0;
+    padding: 0;
+  }
+`;
+
 const Table = styled.table`
   width: 100%;
   border-collapse: separate;
-  border-spacing: 0 12px;
+  border-spacing: 0 10px;
+  min-width: 600px;
   th {
     color: #9ca3af;
     text-align: right;
-    padding: 0 20px;
-    font-size: 14px;
+    padding: 0 15px;
+    font-size: 13px;
   }
 `;
+
 const TableRow = styled.tr`
   background: #f9fafb;
-  transition: 0.3s;
-  &:hover {
-    background: #f3f4f6;
-  }
   td {
-    padding: 20px;
+    padding: 15px;
     &:first-child {
       border-radius: 0 15px 15px 0;
     }
@@ -120,60 +162,71 @@ const TableRow = styled.tr`
     }
   }
 `;
+
 const Badge = styled.span`
   background: ${(props) => props.bg || "#FFE4E6"};
   color: ${(props) => props.color || colors.primary};
-  padding: 5px 12px;
+  padding: 4px 10px;
   border-radius: 8px;
   font-weight: bold;
-  font-size: 13px;
-  margin-left: 8px;
+  font-size: 12px;
 `;
+
 const ActionButton = styled.button`
   background: ${(props) => props.bg || colors.primary};
   color: white;
   border: none;
-  padding: 12px 25px;
+  padding: 12px 20px;
   border-radius: 12px;
   font-weight: bold;
   cursor: pointer;
-  transition: 0.3s;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+  width: ${(props) => (props.fullWidth ? "100%" : "auto")};
+  transition: 0.3s;
   &:hover {
     transform: translateY(-2px);
     filter: brightness(1.1);
   }
 `;
+
+// --- NYA FIXADE DEFINITIONER (För ESLint felen) ---
 const ModalOverlay = styled(motion.div)`
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: rgba(15, 23, 42, 0.7);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
   backdrop-filter: blur(4px);
+  padding: 20px;
 `;
+
 const ModalContent = styled(motion.div)`
   background: white;
-  padding: 35px;
-  border-radius: 30px;
-  width: 550px;
-  max-width: 95%;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  padding: 25px;
+  border-radius: 25px;
+  width: 100%;
+  max-width: 550px;
+  max-height: 90vh;
+  overflow-y: auto;
+  @media (min-width: 768px) {
+    padding: 35px;
+    border-radius: 30px;
+  }
 `;
+
 const InputGroup = styled.div`
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   label {
     display: block;
     margin-bottom: 8px;
     font-weight: bold;
     color: ${colors.secondary};
+    font-size: 14px;
   }
   input,
   select {
@@ -190,23 +243,24 @@ const InputGroup = styled.div`
   }
 `;
 
+// --- 3. Hjälpfunktioner ---
 const printInvoice = (sale) => {
   const printWindow = window.open("", "_blank");
   printWindow.document.write(`
     <html dir="rtl"><head><title>فاتورة - ${sale.invoiceNo}</title><style>@import url('https://fonts.googleapis.com/css2?family=Cairo&display=swap'); body { font-family: 'Cairo', sans-serif; padding: 40px; } .header { text-align: center; border-bottom: 3px solid ${colors.primary}; padding-bottom: 20px; } .invoice-box { border: 1px solid #eee; padding: 30px; border-radius: 20px; margin-top: 30px; } .row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f9f9f9; } .total { font-size: 28px; font-weight: bold; color: ${colors.primary}; margin-top: 30px; text-align: left; } </style></head>
-    <body><div class="header"><h1>بنك الدم الوطني</h1><p>رقم الفاتورة: ${sale.invoiceNo}</p></div><div class="invoice-box"><div class="row"><span>المريض:</span> <span>${sale.patientName}</span></div><div class="row"><span>الجهة:</span> <span>${sale.customerName}</span></div><div class="row"><span>المنتج:</span> <span>${sale.product} (${sale.bloodType})</span></div><div class="total">المبلغ النهائي: ${sale.amount.toLocaleString()} ل.س</div></div><div style="margin-top:50px; text-align:center; color:#999; font-size:12px;">تعتبر هذه الفاتورة سند قبض رسمي</div></body></html>
+    <body><div class="header"><h1>بنك الدم الوطني</h1><p>رقم الفاتورة: ${sale.invoiceNo}</p></div><div class="invoice-box"><div class="row"><span>المريض:</span> <span>${sale.patientName}</span></div><div class="row"><span>الجهة:</span> <span>${sale.customerName}</span></div><div class="row"><span>المنتج:</span> <span>${sale.product} (${sale.bloodType})</span></div><div class="total">المبلغ النهائي: ${sale.amount?.toLocaleString()} ل.س</div></div></body></html>
   `);
   printWindow.document.close();
   setTimeout(() => printWindow.print(), 500);
 };
 
+// --- 4. Huvudkomponent ---
 const BloodSalesPage = ({
   externalSales = [],
   updateOrderStatus,
   clearNotifications,
 }) => {
   const [showModal, setShowModal] = useState(false);
-
   const hospitalsInDaraa = [
     "مراجعة خارجية",
     "مستشفى درعا الوطني",
@@ -258,18 +312,10 @@ const BloodSalesPage = ({
     if (clearNotifications) clearNotifications();
   }, [clearNotifications]);
 
-  const updateGlobalRevenue = (newAmount) => {
-    const updatedTotal = totalRevenue + newAmount;
-    setTotalRevenue(updatedTotal);
-    localStorage.setItem("totalRevenue", updatedTotal);
-  };
-
   const handleFormSubmit = (e) => {
     e.preventDefault();
-
     const unitPrice = formData.product === "دم كامل" ? 200000 : 240000;
     const total = unitPrice * (formData.quantity || 1);
-
     const newSale = {
       id: Date.now(),
       invoiceNo: `INV-${Math.floor(1000 + Math.random() * 9000)}`,
@@ -279,40 +325,36 @@ const BloodSalesPage = ({
     };
 
     setSales([newSale, ...sales]);
-    updateGlobalRevenue(total);
+    const newRev = totalRevenue + total;
+    setTotalRevenue(newRev);
+    localStorage.setItem("totalRevenue", newRev);
     setShowModal(false);
-  };
-
-  const handleAcceptOrder = (order) => {
-    if (updateOrderStatus) {
-      updateOrderStatus(order.id, "accepted");
-      updateGlobalRevenue(order.totalPrice || 0);
-    }
   };
 
   return (
     <PageWrapper>
       <Container>
+        {/* Statistik sektion */}
         <StatsGrid>
           <StatCard gradient>
             <div>
-              <div style={{ opacity: 0.8, fontSize: "14px" }}>
-                إجمالي عمليات اليوم
+              <div style={{ opacity: 0.8, fontSize: "12px" }}>
+                إجمالي العمليات
               </div>
-              <div style={{ fontSize: "32px", fontWeight: "900" }}>
+              <div style={{ fontSize: "28px", fontWeight: "900" }}>
                 {sales.length + externalSales.length}
               </div>
             </div>
-            <FaChartLine size={40} style={{ opacity: 0.3 }} />
+            <FaChartLine size={35} style={{ opacity: 0.3 }} />
           </StatCard>
           <StatCard border>
             <div>
-              <div style={{ color: "#6B7280", fontSize: "14px" }}>
-                إجمالي الإيرادات المزامنة (ل.س)
+              <div style={{ color: "#6B7280", fontSize: "12px" }}>
+                الإيرادات (ل.س)
               </div>
               <div
                 style={{
-                  fontSize: "32px",
+                  fontSize: "24px",
                   fontWeight: "900",
                   color: colors.secondary,
                 }}
@@ -321,67 +363,61 @@ const BloodSalesPage = ({
               </div>
             </div>
             <FaFileInvoiceDollar
-              size={40}
+              size={35}
               color={colors.success}
               style={{ opacity: 0.2 }}
             />
           </StatCard>
         </StatsGrid>
 
+        {/* Externa Order sektion */}
         <Section>
-          <SectionTitle color={colors.primary}>
-            <FaHospital /> طلبات المستشفيات الخارجية (درعا)
+          <SectionTitle>
+            <FaHospital color={colors.primary} /> طلبات المستشفيات الخارجية
           </SectionTitle>
           <AnimatePresence>
             {externalSales.length === 0 ? (
-              <div
+              <p
                 style={{
                   textAlign: "center",
-                  padding: "40px",
                   color: "#9CA3AF",
+                  padding: "20px",
                 }}
               >
-                لا يوجد طلبات خارجية نشطة
-              </div>
+                لا يوجد طلبات نشطة
+              </p>
             ) : (
               externalSales.map((order) => (
                 <ExternalOrderRow key={order.id} status={order.status}>
                   <div>
-                    <div style={{ fontSize: "12px", color: "#9CA3AF" }}>
+                    <div style={{ fontSize: "11px", color: "#9CA3AF" }}>
                       {order.timestamp}
                     </div>
-                    <div style={{ fontSize: "18px", fontWeight: "bold" }}>
+                    <div style={{ fontWeight: "bold", fontSize: "16px" }}>
                       المريض: {order.patientName}
                     </div>
                     <div style={{ marginTop: "5px" }}>
-                      <Badge>{order.bloodType}</Badge>
-                      <span>
+                      <Badge>{order.bloodType}</Badge>{" "}
+                      <span style={{ fontSize: "14px" }}>
                         {order.productName} × {order.quantity}
                       </span>
                     </div>
                   </div>
                   {order.status === "pending" ? (
                     <ActionButton
+                      fullWidth
                       bg={colors.success}
-                      onClick={() => handleAcceptOrder(order)}
+                      onClick={() => updateOrderStatus?.(order.id, "accepted")}
                     >
                       <FaCheckDouble /> قبول وتسليم
                     </ActionButton>
                   ) : (
                     <ActionButton
+                      fullWidth
                       bg={colors.secondary}
-                      onClick={() =>
-                        printInvoice({
-                          invoiceNo: order.id,
-                          patientName: order.patientName,
-                          customerName: "مستشفى خارجي",
-                          product: order.productName,
-                          bloodType: order.bloodType,
-                          amount: order.totalPrice,
-                        })
-                      }
+                      onClick={() => printInvoice(order)}
                     >
-                      <FaPrint /> طباعة الفاتورة
+                      <FaPrint /> طباعة
                     </ActionButton>
                   )}
                 </ExternalOrderRow>
@@ -390,23 +426,24 @@ const BloodSalesPage = ({
           </AnimatePresence>
         </Section>
 
+        {/* Försäljningslogg sektion */}
         <Section>
           <div
             style={{
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              marginBottom: "30px",
+              marginBottom: "20px",
             }}
           >
-            <SectionTitle>
-              <FaHistory /> سجل المبيعات المباشرة
+            <SectionTitle style={{ marginBottom: 0 }}>
+              <FaHistory /> سجل المبيعات
             </SectionTitle>
             <ActionButton onClick={() => setShowModal(true)}>
-              <FaPlusCircle /> بيع مباشر جديد
+              <FaPlusCircle /> بيع جديد
             </ActionButton>
           </div>
-          <div style={{ overflowX: "auto" }}>
+          <TableContainer>
             <Table>
               <thead>
                 <tr>
@@ -415,7 +452,7 @@ const BloodSalesPage = ({
                   <th>المريض</th>
                   <th>المنتج</th>
                   <th>القيمة</th>
-                  <th>إجراءات</th>
+                  <th>إجراء</th>
                 </tr>
               </thead>
               <tbody>
@@ -427,26 +464,27 @@ const BloodSalesPage = ({
                     <td>
                       <Badge bg="#F1F5F9" color="#475569">
                         {sale.bloodType}
-                      </Badge>
+                      </Badge>{" "}
                       {sale.product}
                     </td>
                     <td style={{ fontWeight: "bold", color: colors.primary }}>
-                      {sale.amount.toLocaleString()} ل.س
+                      {sale.amount.toLocaleString()}
                     </td>
                     <td>
                       <FaPrint
                         onClick={() => printInvoice(sale)}
-                        style={{ cursor: "pointer" }}
+                        style={{ cursor: "pointer", color: colors.secondary }}
                       />
                     </td>
                   </TableRow>
                 ))}
               </tbody>
             </Table>
-          </div>
+          </TableContainer>
         </Section>
       </Container>
 
+      {/* Modal för ny försäljning */}
       <AnimatePresence>
         {showModal && (
           <ModalOverlay
@@ -463,7 +501,7 @@ const BloodSalesPage = ({
                 }}
               >
                 <SectionTitle style={{ marginBottom: 0 }}>
-                  <FaPlusCircle color={colors.primary} /> تسجيل بيع جديد
+                  تسجيل بيع مباشر
                 </SectionTitle>
                 <FaTimes
                   onClick={() => setShowModal(false)}
@@ -472,18 +510,17 @@ const BloodSalesPage = ({
               </div>
               <form onSubmit={handleFormSubmit}>
                 <InputGroup>
-                  <label>اسم المريض الكامل</label>
+                  <label>اسم المريض</label>
                   <input
                     required
-                    placeholder="أدخل اسم المريض"
+                    placeholder="الاسم بالكامل"
                     onChange={(e) =>
                       setFormData({ ...formData, patientName: e.target.value })
                     }
                   />
                 </InputGroup>
-
                 <InputGroup>
-                  <label>جهة الاستلام (درعا)</label>
+                  <label>الجهة</label>
                   <select
                     onChange={(e) =>
                       setFormData({ ...formData, customerName: e.target.value })
@@ -496,16 +533,15 @@ const BloodSalesPage = ({
                     ))}
                   </select>
                 </InputGroup>
-
                 <div
                   style={{
                     display: "grid",
                     gridTemplateColumns: "1fr 1fr",
-                    gap: "15px",
+                    gap: "10px",
                   }}
                 >
                   <InputGroup>
-                    <label>فصيلة الدم</label>
+                    <label>الفصيلة</label>
                     <select
                       onChange={(e) =>
                         setFormData({ ...formData, bloodType: e.target.value })
@@ -519,23 +555,23 @@ const BloodSalesPage = ({
                     </select>
                   </InputGroup>
                   <InputGroup>
-                    <label>نوع المنتج</label>
+                    <label>المنتج</label>
                     <select
                       onChange={(e) =>
                         setFormData({ ...formData, product: e.target.value })
                       }
                     >
-                      <option value="دم كامل">دم كامل (200,000 ل.س)</option>
-                      <option value="بلازما">بلازما (240,000 ل.س)</option>
+                      <option value="دم كامل">دم كامل</option>
+                      <option value="بلازما">بلازما</option>
                     </select>
                   </InputGroup>
                 </div>
-
                 <ActionButton
-                  style={{ width: "100%", padding: "15px", marginTop: "10px" }}
+                  fullWidth
+                  style={{ padding: "15px", marginTop: "10px" }}
                   type="submit"
                 >
-                  حفظ العملية وإصدار فاتورة
+                  إتمام العملية
                 </ActionButton>
               </form>
             </ModalContent>

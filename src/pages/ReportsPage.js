@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import styled, { keyframes } from "styled-components"; // La till css här
+import styled, { keyframes, createGlobalStyle } from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaFilePdf,
@@ -13,30 +13,64 @@ import {
   FaListUl,
 } from "react-icons/fa";
 
-// Denna används nu i StatValue nedan
 const countUp = keyframes`
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 `;
 
+const GlobalStyle = createGlobalStyle`
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 0; background: #f4f7fa; }
+`;
+
 const PageContainer = styled.div`
-  padding: 3rem 2rem;
+  padding: 1rem;
   max-width: 1300px;
   margin: 0 auto;
   direction: rtl;
   font-family: "Cairo", sans-serif;
-  background: #f4f7fa;
   min-height: 100vh;
+
+  @media (min-width: 768px) {
+    padding: 3rem 2rem;
+  }
 `;
 
-// Ny styled component som använder animationen!
-const StatValue = styled.h2`
-  margin: 10px 0;
-  animation: ${countUp} 0.6s ease-out forwards;
+const HeaderArea = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+`;
+
+const TitleGroup = styled.div`
+  h1 {
+    font-size: clamp(1.5rem, 5vw, 2.2rem);
+    color: #1e293b;
+    margin: 0;
+  }
+  p {
+    color: #64748b;
+    margin: 5px 0 0;
+  }
+`;
+
+const TabContainer = styled.div`
+  display: flex;
+  background: #e2e8f0;
+  padding: 5px;
+  border-radius: 15px;
+  align-self: flex-start; /* Förhindrar att den sträcker ut sig på mobilen */
 `;
 
 const TabButton = styled.button`
-  padding: 12px 24px;
+  padding: 10px 18px;
   border-radius: 12px;
   border: none;
   background: ${(props) => (props.active ? "#3b82f6" : "transparent")};
@@ -47,17 +81,85 @@ const TabButton = styled.button`
   display: flex;
   align-items: center;
   gap: 8px;
+  font-size: 0.9rem;
+
   &:hover {
-    background: ${(props) => (props.active ? "#2563eb" : "#e2e8f0")};
+    background: ${(props) => (props.active ? "#2563eb" : "#cbd5e1")};
+  }
+
+  @media (min-width: 768px) {
+    padding: 12px 24px;
+    font-size: 1rem;
   }
 `;
 
 const GlassCard = styled(motion.div)`
   background: white;
-  padding: 25px;
+  padding: 20px;
   border-radius: 24px;
   border: 1px solid #e2e8f0;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
+  margin-bottom: 20px;
+
+  @media (min-width: 768px) {
+    padding: 25px;
+  }
+`;
+
+const StatsGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  margin-bottom: 30px;
+
+  @media (min-width: 480px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+`;
+
+const StatValue = styled.h2`
+  margin: 10px 0;
+  font-size: 2rem;
+  animation: ${countUp} 0.6s ease-out forwards;
+`;
+
+const TableWrapper = styled.div`
+  overflow-x: auto; /* Gör tabellen skrollbar på mobilen */
+  width: 100%;
+  -webkit-overflow-scrolling: touch;
+`;
+
+const StyledTable = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  text-align: right;
+  min-width: 600px; /* Tvingar fram scroll om skärmen är för liten */
+
+  th {
+    padding: 15px;
+    color: #64748b;
+    border-bottom: 2px solid #f1f5f9;
+  }
+
+  td {
+    padding: 15px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+`;
+
+const ActionButtonGroup = styled.div`
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+
+  @media (min-width: 640px) {
+    flex-direction: row;
+  }
 `;
 
 const ExportButton = styled(motion.button)`
@@ -70,23 +172,39 @@ const ExportButton = styled(motion.button)`
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   font-family: inherit;
+  width: 100%;
+
+  @media (min-width: 640px) {
+    width: auto;
+  }
 `;
 
 const Toast = styled(motion.div)`
   position: fixed;
-  bottom: 30px;
-  left: 30px;
+  bottom: 20px;
+  left: 20px;
+  right: 20px; /* Centrerad på mobil */
   background: #10b981;
   color: white;
-  padding: 15px 25px;
+  padding: 15px;
   border-radius: 12px;
   box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
   z-index: 2000;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
+
+  @media (min-width: 768px) {
+    width: auto;
+    right: auto;
+    bottom: 30px;
+    left: 30px;
+    padding: 15px 25px;
+  }
 `;
 
 const ReportsPage = () => {
@@ -94,7 +212,7 @@ const ReportsPage = () => {
   const [isExporting, setIsExporting] = useState(false);
   const [showToast, setShowToast] = useState(false);
 
-  const triggerExport = (format) => {
+  const triggerExport = () => {
     setIsExporting(true);
     setTimeout(() => {
       setIsExporting(false);
@@ -112,28 +230,14 @@ const ReportsPage = () => {
 
   return (
     <PageContainer>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "2.5rem",
-        }}
-      >
-        <div>
-          <h1 style={{ fontSize: "2.2rem", color: "#1e293b", margin: 0 }}>
-            مركز التقارير الرقمي
-          </h1>
-          <p style={{ color: "#64748b" }}>نظام تحليل بيانات بنك الدم المتقدم</p>
-        </div>
-        <div
-          style={{
-            display: "flex",
-            background: "#e2e8f0",
-            padding: "5px",
-            borderRadius: "15px",
-          }}
-        >
+      <GlobalStyle />
+      <HeaderArea>
+        <TitleGroup>
+          <h1>مركز التقارير الرقمي</h1>
+          <p>نظام تحليل بيانات بنك الدم المتقدم</p>
+        </TitleGroup>
+
+        <TabContainer>
           <TabButton
             active={activeTab === "overview"}
             onClick={() => setActiveTab("overview")}
@@ -144,30 +248,23 @@ const ReportsPage = () => {
             active={activeTab === "details"}
             onClick={() => setActiveTab("details")}
           >
-            <FaListUl /> القائمة التفصيلية
+            <FaListUl /> التفاصيل
           </TabButton>
-        </div>
-      </div>
+        </TabContainer>
+      </HeaderArea>
 
       <AnimatePresence mode="wait">
         {activeTab === "overview" ? (
           <motion.div
             key="overview"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
           >
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-                gap: "20px",
-                marginBottom: "30px",
-              }}
-            >
+            <StatsGrid>
               <GlassCard whileHover={{ y: -5 }}>
                 <FaUsers size={24} color="#3b82f6" />
-                <StatValue>1,402</StatValue> {/* Här används animationen nu! */}
+                <StatValue>1,402</StatValue>
                 <p style={{ margin: 0, color: "#64748b" }}>إجمالي المتبرعين</p>
               </GlassCard>
               <GlassCard whileHover={{ y: -5 }}>
@@ -185,10 +282,10 @@ const ReportsPage = () => {
                 <StatValue>2</StatValue>
                 <p style={{ margin: 0, color: "#64748b" }}>تنبيهات حرجة</p>
               </GlassCard>
-            </div>
+            </StatsGrid>
 
             <GlassCard>
-              <h3 style={{ marginBottom: "2rem" }}>
+              <h3 style={{ marginBottom: "1.5rem" }}>
                 توزيع المخزون الاستراتيجي
               </h3>
               <div style={{ display: "grid", gap: "25px" }}>
@@ -204,7 +301,13 @@ const ReportsPage = () => {
                       <span style={{ fontWeight: "bold" }}>
                         فصيلة {item.type}
                       </span>
-                      <span style={{ color: item.color, fontWeight: "bold" }}>
+                      <span
+                        style={{
+                          color: item.color,
+                          fontWeight: "bold",
+                          fontSize: "0.9rem",
+                        }}
+                      >
                         {item.status} ({item.amount} وحدة)
                       </span>
                     </div>
@@ -231,99 +334,88 @@ const ReportsPage = () => {
         ) : (
           <motion.div
             key="details"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
           >
             <GlassCard>
-              <table
-                style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
-                  textAlign: "right",
-                }}
-              >
-                <thead>
-                  <tr
-                    style={{
-                      color: "#64748b",
-                      borderBottom: "2px solid #f1f5f9",
-                    }}
-                  >
-                    <th style={{ padding: "15px" }}>الفصيلة</th>
-                    <th>الكمية المتوفرة</th>
-                    <th>آخر تحديث</th>
-                    <th>الإجراء المطلوب</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {inventoryData.map((item, i) => (
-                    <tr key={i} style={{ borderBottom: "1px solid #f1f5f9" }}>
-                      <td style={{ padding: "15px", fontWeight: "bold" }}>
-                        {item.type}
-                      </td>
-                      <td>{item.amount} كيس</td>
-                      <td style={{ color: "#94a3b8", fontSize: "0.9rem" }}>
-                        منذ ساعتين
-                      </td>
-                      <td>
-                        <button
-                          style={{
-                            padding: "6px 12px",
-                            borderRadius: "8px",
-                            border: "none",
-                            background:
-                              item.amount < 15 ? "#fee2e2" : "#f1f5f9",
-                            color: item.amount < 15 ? "#ef4444" : "#475569",
-                            cursor: "pointer",
-                            fontSize: "0.8rem",
-                            fontWeight: "bold",
-                          }}
-                        >
-                          {item.amount < 15 ? "طلب تعزيز" : "معاينة"}
-                        </button>
-                      </td>
+              <TableWrapper>
+                <StyledTable>
+                  <thead>
+                    <tr>
+                      <th>الفصيلة</th>
+                      <th>الكمية المتوفرة</th>
+                      <th>آخر تحديث</th>
+                      <th>الإجراء المطلوب</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {inventoryData.map((item, i) => (
+                      <tr key={i}>
+                        <td style={{ fontWeight: "bold" }}>{item.type}</td>
+                        <td>{item.amount} كيس</td>
+                        <td style={{ color: "#94a3b8", fontSize: "0.85rem" }}>
+                          منذ ساعتين
+                        </td>
+                        <td>
+                          <button
+                            style={{
+                              padding: "8px 16px",
+                              borderRadius: "8px",
+                              border: "none",
+                              background:
+                                item.amount < 15 ? "#fee2e2" : "#f1f5f9",
+                              color: item.amount < 15 ? "#ef4444" : "#475569",
+                              cursor: "pointer",
+                              fontSize: "0.8rem",
+                              fontWeight: "bold",
+                            }}
+                          >
+                            {item.amount < 15 ? "طلب تعزيز" : "معاينة"}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </StyledTable>
+              </TableWrapper>
             </GlassCard>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div style={{ marginTop: "2rem", display: "flex", gap: "15px" }}>
+      <ActionButtonGroup>
         <ExportButton
           variant="dark"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          onClick={() => triggerExport("PDF")}
+          onClick={triggerExport}
           disabled={isExporting}
         >
           {isExporting ? (
             "جاري التحميل..."
           ) : (
             <>
-              <FaFilePdf /> تصدير PDF كملف رسمي
+              <FaFilePdf /> تصدير PDF رسمي
             </>
           )}
         </ExportButton>
         <ExportButton
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          onClick={() => triggerExport("Excel")}
+          onClick={triggerExport}
           disabled={isExporting}
         >
-          <FaFileExcel color="#10b981" /> تصدير بيانات Excel
+          <FaFileExcel color="#10b981" /> تصدير Excel
         </ExportButton>
-      </div>
+      </ActionButtonGroup>
 
       <AnimatePresence>
         {showToast && (
           <Toast
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
           >
             <FaCheckCircle /> تم تصدير التقرير بنجاح!
           </Toast>

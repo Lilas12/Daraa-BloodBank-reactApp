@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"; // Lagt till useEffect
+import React, { useState, useEffect } from "react";
 import styled, { keyframes } from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -6,10 +6,8 @@ import {
   FaTint,
   FaUser,
   FaCreditCard,
-  FaFileInvoiceDollar,
   FaHistory,
   FaCheckCircle,
-  FaClock,
 } from "react-icons/fa";
 
 const pulse = keyframes`
@@ -19,30 +17,40 @@ const pulse = keyframes`
 `;
 
 const PageContainer = styled.div`
-  padding: 30px;
+  padding: 15px;
   max-width: 1400px;
   margin: 0 auto;
   direction: rtl;
   font-family: "Cairo", sans-serif;
   background: #f8fafc;
   min-height: 100vh;
+
+  @media (min-width: 768px) {
+    padding: 30px;
+  }
 `;
 
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1.8fr;
-  gap: 30px;
-  @media (max-width: 1100px) {
-    grid-template-columns: 1fr;
+  grid-template-columns: 1fr; /* Mobil: 1 kolumn */
+  gap: 20px;
+
+  @media (min-width: 1100px) {
+    grid-template-columns: 1fr 1.8fr; /* Dator: 2 kolumner */
+    gap: 30px;
   }
 `;
 
 const Card = styled(motion.div)`
   background: white;
-  padding: 30px;
+  padding: 20px;
   border-radius: 24px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
   border: 1px solid #edf2f7;
+
+  @media (min-width: 768px) {
+    padding: 30px;
+  }
 
   h2 {
     display: flex;
@@ -50,30 +58,39 @@ const Card = styled(motion.div)`
     gap: 12px;
     color: #1a237e;
     margin-bottom: 25px;
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     font-weight: 800;
+
+    @media (min-width: 768px) {
+      font-size: 1.5rem;
+    }
   }
 `;
 
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 15px;
+
   label {
     font-weight: 700;
     color: #4a5568;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     display: block;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
+
   input,
   select {
     width: 100%;
-    padding: 14px;
+    padding: 12px;
     border: 2px solid #e2e8f0;
     border-radius: 12px;
     font-family: "Cairo";
+    font-size: 1rem;
     transition: 0.3s;
+    box-sizing: border-box; /* Viktigt för responsivitet */
+
     &:focus {
       outline: none;
       border-color: #3b82f6;
@@ -84,14 +101,14 @@ const Form = styled.form`
 
 const PriceTag = styled.div`
   background: #f0f7ff;
-  padding: 20px;
+  padding: 15px;
   border-radius: 15px;
   border: 2px dashed #3b82f6;
   text-align: center;
   span {
     color: #1e40af;
     font-weight: 900;
-    font-size: 1.4rem;
+    font-size: 1.2rem;
   }
 `;
 
@@ -99,80 +116,117 @@ const SubmitButton = styled.button`
   background: #dc143c;
   color: white;
   border: none;
-  padding: 18px;
+  padding: 16px;
   border-radius: 15px;
   font-weight: 800;
-  font-size: 1.1rem;
+  font-size: 1rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
   transition: 0.3s;
+  width: 100%;
+
   &:hover {
     background: #b01030;
     transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(220, 20, 60, 0.2);
   }
 `;
 
 const StatusBadge = styled.div`
-  padding: 8px 16px;
-  border-radius: 12px;
-  font-size: 0.85rem;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 0.8rem;
   font-weight: 800;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   background: ${(props) =>
     props.status === "accepted" ? "#dcfce7" : "#fef3c7"};
   color: ${(props) => (props.status === "accepted" ? "#166534" : "#92400e")};
 `;
 
 const Indicator = styled.div`
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: ${(props) =>
     props.status === "accepted" ? "#10b981" : "#f59e0b"};
-  box-shadow: ${(props) =>
-    props.status === "accepted" ? "0 0 12px #10b981" : "none"};
   animation: ${(props) => (props.status === "pending" ? pulse : "none")} 1.5s
     infinite ease-in-out;
+`;
+
+const ResponsiveTableContainer = styled.div`
+  width: 100%;
 `;
 
 const Table = styled.table`
   width: 100%;
   border-collapse: separate;
   border-spacing: 0 10px;
-  th {
-    padding: 15px;
-    color: #94a3b8;
-    font-weight: 600;
-    font-size: 0.9rem;
+
+  /* Mobil-anpassning av tabell */
+  @media (max-width: 768px) {
+    thead {
+      display: none; /* Dölj rubriker på mobil */
+    }
+
+    tr {
+      display: block;
+      margin-bottom: 15px;
+      border: 1px solid #f1f5f9;
+      border-radius: 15px;
+      background: white;
+      padding: 10px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+    }
+
+    td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 5px !important;
+      border: none !important;
+      text-align: left;
+      font-size: 0.9rem;
+
+      &:before {
+        content: attr(data-label); /* Visar rubriken via data-label */
+        font-weight: bold;
+        color: #94a3b8;
+        margin-left: 10px;
+      }
+    }
   }
-  tr {
-    background: white;
-    transition: 0.2s;
-  }
-  td {
-    padding: 20px;
-    border-top: 1px solid #f1f5f9;
-    border-bottom: 1px solid #f1f5f9;
-  }
-  td:first-child {
-    border-right: 1px solid #f1f5f9;
-    border-radius: 0 15px 15px 0;
-  }
-  td:last-child {
-    border-left: 1px solid #f1f5f9;
-    border-radius: 15px 0 0 15px;
+
+  /* Dator-stil */
+  @media (min-width: 769px) {
+    th {
+      padding: 15px;
+      color: #94a3b8;
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-align: right;
+    }
+    td {
+      padding: 20px;
+      border-top: 1px solid #f1f5f9;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    td:first-child {
+      border-radius: 0 15px 15px 0;
+      border-right: 1px solid #f1f5f9;
+    }
+    td:last-child {
+      border-radius: 15px 0 0 15px;
+      border-left: 1px solid #f1f5f9;
+    }
   }
 `;
 
 // --- Huvudkomponent ---
 const HospitalPage = ({ onSendOrder, externalSales = [] }) => {
-  // SYNKNING: Hämta kassan från LocalStorage
   const [revenue, setRevenue] = useState(() => {
     const saved = localStorage.getItem("totalRevenue");
     return saved ? parseInt(saved) : 3500000;
@@ -212,38 +266,41 @@ const HospitalPage = ({ onSendOrder, externalSales = [] }) => {
     };
 
     onSendOrder(newOrder);
-    setFormData({ ...formData, patientName: "" });
+    setFormData({
+      ...formData,
+      patientName: "",
+      bloodType: "A+",
+      productType: "whole_blood",
+      quantity: 1,
+      paymentMethod: "نقدي",
+    });
   };
 
   return (
     <PageContainer>
-      <div style={{ marginBottom: "20px", textAlign: "left" }}>
-        <small style={{ color: "#94a3b8" }}>
-          إجمالي إيرادات البنك (مزامنة):{" "}
-        </small>
+      <div
+        style={{ marginBottom: "20px", textAlign: "right", fontSize: "0.9rem" }}
+      >
+        <span style={{ color: "#94a3b8" }}>إجمالي إيرادات البنك: </span>
         <strong style={{ color: "#dc143c" }}>
           {revenue.toLocaleString()} ل.س
         </strong>
       </div>
 
       <Grid>
-        <Card
-          initial={{ opacity: 0, x: 30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-        >
+        <Card initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <h2>
-            <FaHospital color="#dc143c" /> طلب استجرار جديد
+            <FaHospital color="#dc143c" /> طلب جديد
           </h2>
           <Form onSubmit={handleSubmit}>
-            <div>
+            <div className="form-group">
               <label>
-                <FaUser /> اسم المريض الثلاثي
+                <FaUser /> اسم المريض
               </label>
               <input
                 required
                 type="text"
-                placeholder="أدخل اسم المريض الكامل"
+                placeholder="الاسم الكامل"
                 value={formData.patientName}
                 onChange={(e) =>
                   setFormData({ ...formData, patientName: e.target.value })
@@ -255,7 +312,7 @@ const HospitalPage = ({ onSendOrder, externalSales = [] }) => {
               style={{
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr",
-                gap: "15px",
+                gap: "10px",
               }}
             >
               <div>
@@ -276,7 +333,7 @@ const HospitalPage = ({ onSendOrder, externalSales = [] }) => {
                 </select>
               </div>
               <div>
-                <label>الكمية (وحدة)</label>
+                <label>الكمية</label>
                 <input
                   type="number"
                   min="1"
@@ -284,68 +341,75 @@ const HospitalPage = ({ onSendOrder, externalSales = [] }) => {
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      quantity: parseInt(e.target.value),
+                      quantity: parseInt(e.target.value) || 1,
                     })
                   }
                 />
               </div>
             </div>
 
-            <div>
-              <label>نوع المنتج</label>
-              <select
-                value={formData.productType}
-                onChange={(e) =>
-                  setFormData({ ...formData, productType: e.target.value })
-                }
-              >
-                <option value="whole_blood">دم كامل</option>
-                <option value="plasma">بلازما</option>
-                <option value="platelets">صفائح دموية</option>
-              </select>
-            </div>
-
-            <div>
-              <label>
-                <FaCreditCard /> طريقة الدفع
-              </label>
-              <select
-                onChange={(e) =>
-                  setFormData({ ...formData, paymentMethod: e.target.value })
-                }
-              >
-                <option value="نقدي">دفع نقدي (عند الاستلام)</option>
-                <option value="تحويل">تحويل بنكي</option>
-              </select>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "10px",
+              }}
+            >
+              <div>
+                <label>المنتج</label>
+                <select
+                  value={formData.productType}
+                  onChange={(e) =>
+                    setFormData({ ...formData, productType: e.target.value })
+                  }
+                >
+                  <option value="whole_blood">دم كامل</option>
+                  <option value="plasma">بلازما</option>
+                  <option value="platelets">صفائح</option>
+                </select>
+              </div>
+              <div>
+                <label>
+                  <FaCreditCard /> الدفع
+                </label>
+                <select
+                  value={formData.paymentMethod}
+                  onChange={(e) =>
+                    setFormData({ ...formData, paymentMethod: e.target.value })
+                  }
+                >
+                  <option value="نقدي">نقدي</option>
+                  <option value="تحويل">تحويل</option>
+                </select>
+              </div>
             </div>
 
             <PriceTag>
-              <FaFileInvoiceDollar style={{ marginLeft: "10px" }} />
-              التكلفة الإجمالية: <span>{totalPrice.toLocaleString()} ل.س</span>
+              <span>{totalPrice.toLocaleString()} ل.س</span>
             </PriceTag>
 
             <SubmitButton type="submit">
-              <FaCheckCircle /> إرسال الطلب للبنك
+              <FaCheckCircle /> إرسال الطلب
             </SubmitButton>
           </Form>
         </Card>
 
         <Card
-          initial={{ opacity: 0, x: -30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
         >
           <h2>
-            <FaHistory color="#3b82f6" /> متابعة الطلبات المباشرة
+            <FaHistory color="#3b82f6" /> متابعة الطلبات
           </h2>
-          <div style={{ overflowX: "auto" }}>
+          <ResponsiveTableContainer>
             <Table>
               <thead>
                 <tr>
                   <th>المريض</th>
                   <th>الطلب</th>
                   <th>المبلغ</th>
-                  <th>حالة الطلب</th>
+                  <th>الحالة</th>
                 </tr>
               </thead>
               <tbody>
@@ -353,44 +417,40 @@ const HospitalPage = ({ onSendOrder, externalSales = [] }) => {
                   {externalSales.map((order) => (
                     <motion.tr
                       key={order.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      style={{
-                        background:
-                          order.status === "accepted" ? "#f0fdf4" : "white",
-                      }}
                     >
-                      <td style={{ fontWeight: "bold" }}>
+                      <td data-label="المريض" style={{ fontWeight: "bold" }}>
                         {order.patientName}
                       </td>
-                      <td>
-                        <div style={{ fontSize: "0.9rem" }}>
-                          {order.productName || "دم كامل"}
-                        </div>
-                        <div style={{ color: "#dc143c", fontWeight: "bold" }}>
-                          {order.bloodType} × {order.quantity}
-                        </div>
+                      <td data-label="الطلب">
+                        {order.productName} ({order.bloodType}) ×{" "}
+                        {order.quantity}
                       </td>
-                      <td style={{ fontWeight: "800", color: "#1e40af" }}>
+                      <td
+                        data-label="المبلغ"
+                        style={{ fontWeight: "800", color: "#1e40af" }}
+                      >
                         {order.totalPrice?.toLocaleString()}
                       </td>
-                      <td>
+                      <td data-label="الحالة">
                         <StatusBadge status={order.status}>
                           <Indicator status={order.status} />
                           {order.status === "accepted"
-                            ? "تم الاستلام ✅"
-                            : "قيد الانتظار"}
+                            ? "تم الاستلام"
+                            : "انتظار"}
                         </StatusBadge>
-                        <div
+                        <span
                           style={{
                             fontSize: "10px",
                             color: "#94a3b8",
-                            marginTop: "5px",
+                            display: "block",
+                            marginTop: "4px",
                           }}
                         >
                           {order.timestamp}
-                        </div>
+                        </span>
                       </td>
                     </motion.tr>
                   ))}
@@ -401,25 +461,17 @@ const HospitalPage = ({ onSendOrder, externalSales = [] }) => {
                       colSpan="4"
                       style={{
                         textAlign: "center",
-                        padding: "60px",
+                        padding: "40px",
                         color: "#94a3b8",
                       }}
                     >
-                      <FaClock
-                        size={30}
-                        style={{
-                          display: "block",
-                          margin: "0 auto 10px",
-                          opacity: 0.3,
-                        }}
-                      />
-                      لا يوجد طلبات نشطة حالياً
+                      لا يوجد طلبات حالياً
                     </td>
                   </tr>
                 )}
               </tbody>
             </Table>
-          </div>
+          </ResponsiveTableContainer>
         </Card>
       </Grid>
     </PageContainer>

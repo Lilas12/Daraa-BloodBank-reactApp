@@ -12,6 +12,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useForm } from "react-hook-form";
 
+// Firebase (Säkerställ att sökvägen stämmer i ditt projekt)
 import { auth, db } from "../firebase";
 import {
   signInWithEmailAndPassword,
@@ -20,148 +21,156 @@ import {
 } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 
+// 1. Theme & Breakpoints
 const theme = {
   colors: {
     bloodRed: "#e63946",
-    teal: "#00bcd4",
-    green: "#4caf50",
-    red: "#f44336",
-    navy: "#1a237e",
     bg: "#05071a",
     glass: "rgba(255, 255, 255, 0.05)",
     inputBg: "rgba(255, 255, 255, 0.08)",
     border: "rgba(255, 255, 255, 0.12)",
+    red: "#f44336",
+  },
+  breakpoints: {
+    mobile: "480px",
   },
 };
 
+// 2. Animations (Keyframes)
 const spin = keyframes`
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 `;
 
-const breath = keyframes`
-  0%, 100% { background-size: 100% 100%; }
-  50% { background-size: 120% 120%; }
-`;
-
 const float = keyframes`
-  0% { transform: translateY(0px) translateX(0px); opacity: 0; }
-  20% { opacity: 0.2; }
-  80% { opacity: 0.2; }
-  100% { transform: translateY(-100vh) translateX(20px); opacity: 0; }
+  0% { transform: translateY(0px); opacity: 0; }
+  50% { opacity: 0.2; }
+  100% { transform: translateY(-100vh); opacity: 0; }
 `;
 
+const containerVariants = {
+  hidden: { opacity: 0, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: { duration: 0.4, staggerChildren: 0.1 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0 },
+};
+
+// 3. Global Styles - Låser skärmen helt
 const GlobalStyles = createGlobalStyle`
-  body {
+  body, html {
     margin: 0; padding: 0;
     background: ${theme.colors.bg};
     font-family: 'Cairo', sans-serif;
-    overflow: hidden; // Förhindra scrollbar pga partiklar
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
+    touch-action: none; /* Förhindrar "pull-to-refresh" på mobil */
   }
 `;
 
+// 4. Styled Components
 const Container = styled.div`
-  min-height: 100vh;
+  height: 100vh;
+  width: 100vw;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(
-    circle at 50% 50%,
-    #3b0505 0%,
-    #05071a 60%,
-    #0d1231 100%
-  );
-  animation: ${breath} 15s ease-in-out infinite;
+  background: radial-gradient(circle at 50% 50%, #2b0505 0%, #05071a 70%);
   direction: rtl;
-  padding: 20px;
+  padding: 10px;
   position: relative;
+  overflow: hidden;
 `;
 
 const Particle = styled.div`
   position: absolute;
   background: ${theme.colors.bloodRed};
   border-radius: 50%;
-  opacity: 0;
-  bottom: -20px;
+  bottom: -10px;
   animation: ${float} linear infinite;
-  filter: blur(2px);
   pointer-events: none;
 `;
 
 const LoginBox = styled(motion.div)`
   background: ${theme.colors.glass};
-  backdrop-filter: blur(25px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid ${theme.colors.border};
-  border-radius: 35px;
+  border-radius: 20px;
   width: 100%;
-  max-width: 440px;
-  padding: 45px;
-  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5);
-  position: relative;
+  max-width: 360px; /* Ännu mer kompakt bredd */
+  padding: 25px 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
   z-index: 10;
+
+  @media (min-width: ${theme.breakpoints.mobile}) {
+    padding: 30px;
+    max-width: 380px;
+  }
 `;
 
 const InputField = styled(motion.div)`
   position: relative;
-  margin-bottom: 22px;
+  margin-bottom: 12px; /* Tätare mellan fälten */
 `;
 
 const Label = styled.label`
   display: block;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 0.9rem;
-  margin-bottom: 10px;
-  margin-right: 5px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.8rem;
+  margin-bottom: 5px;
+  margin-right: 4px;
 `;
 
 const Input = styled(motion.input)`
   width: 100%;
-  padding: 15px 48px 15px 45px;
+  padding: 12px 42px 12px 40px;
   background: ${theme.colors.inputBg};
-  border: 2px solid
+  border: 1.5px solid
     ${(props) => (props.$error ? theme.colors.red : "transparent")};
-  border-radius: 16px;
+  border-radius: 12px;
   color: white;
-  font-size: 1rem;
+  font-size: 16px; /* Viktigt: Förhindrar auto-zoom på iPhone */
   box-sizing: border-box;
   font-family: "Cairo", sans-serif;
-  transition: all 0.3s ease;
+  transition: all 0.2s;
 
   &:focus {
     outline: none;
     border-color: ${theme.colors.bloodRed};
-    background: rgba(255, 255, 255, 0.12);
-    box-shadow: 0 0 15px rgba(230, 57, 70, 0.2);
+    background: rgba(255, 255, 255, 0.1);
   }
 `;
 
 const IconPos = styled.div`
   position: absolute;
-  right: 18px;
-  top: 45px;
+  right: 14px;
+  top: 36px;
   color: ${(props) =>
     props.$active ? theme.colors.bloodRed : "rgba(255, 255, 255, 0.3)"};
-  transition: color 0.3s ease;
 `;
 
 const PasswordToggle = styled.div`
   position: absolute;
-  left: 18px;
-  top: 45px;
+  left: 14px;
+  top: 36px;
   color: rgba(255, 255, 255, 0.4);
   cursor: pointer;
   display: flex;
   align-items: center;
-  height: 24px;
-  &:hover {
-    color: white;
-  }
 `;
 
 const SubmitBtn = styled(motion.button)`
   width: 100%;
-  padding: 18px;
-  border-radius: 18px;
+  padding: 14px;
+  border-radius: 12px;
   border: none;
   background: linear-gradient(
     135deg,
@@ -169,74 +178,37 @@ const SubmitBtn = styled(motion.button)`
     #8b0000 100%
   );
   color: white;
-  font-weight: 800;
-  font-size: 1.1rem;
+  font-weight: 700;
+  font-size: 1rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  font-family: "Cairo", sans-serif;
-  box-shadow: 0 10px 20px rgba(230, 57, 70, 0.2);
+  gap: 10px;
+  margin-top: 10px;
 
   &:disabled {
-    opacity: 0.5;
+    opacity: 0.6;
   }
 `;
 
-const BtnIcon = styled(motion.div)`
-  display: flex;
-  align-items: center;
-`;
-
 const StatusBox = styled(motion.div)`
-  padding: 12px;
-  border-radius: 12px;
-  margin-bottom: 20px;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 15px;
   text-align: center;
-  font-size: 0.9rem;
-  background: ${(props) =>
-    props.$type === "error"
-      ? "rgba(244, 67, 54, 0.1)"
-      : "rgba(76, 175, 80, 0.1)"};
-  color: ${(props) => (props.$type === "error" ? "#e57373" : "#81c784")};
-  border: 1px solid
-    ${(props) => (props.$type === "error" ? "#f44336" : "#4caf50")};
+  font-size: 0.8rem;
+  background: rgba(244, 67, 54, 0.15);
+  color: #ff8a80;
+  border: 1px solid #f44336;
 `;
 
 const Loader = styled(FaCircleNotch)`
   animation: ${spin} 1s linear infinite;
 `;
 
-const containerVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      type: "spring",
-      stiffness: 100,
-      damping: 20,
-      staggerChildren: 0.15,
-      delayChildren: 0.2,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 },
-};
-
-const iconAnimation = {
-  hover: { x: -5, transition: { yoyo: Infinity, duration: 0.4 } },
-};
-
-const inputFocusAnimation = {
-  focus: { scale: 1.02 },
-};
-
-function Login({ onLogin }) {
+// 5. Main Component
+export default function Login({ onLogin }) {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -260,7 +232,6 @@ function Login({ onLogin }) {
         data.password,
       );
       const user = cred.user;
-
       const userDocRef = doc(db, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
 
@@ -278,26 +249,24 @@ function Login({ onLogin }) {
         );
       }
       onLogin(user);
-    } catch (error) {
-      console.error("Login Error:", error);
+    } catch (err) {
       setError("خطأ في البيانات.. يرجى التأكد من البريد وكلمة المرور");
     } finally {
       setLoading(false);
     }
   };
 
-  const particles = Array.from({ length: 15 }).map((_, i) => ({
+  const particles = Array.from({ length: 10 }).map((_, i) => ({
     id: i,
-    size: Math.random() * 8 + 3 + "px",
+    size: Math.random() * 4 + 2 + "px",
     left: Math.random() * 100 + "%",
-    duration: Math.random() * 10 + 10 + "s",
+    duration: Math.random() * 5 + 7 + "s",
     delay: Math.random() * 5 + "s",
   }));
 
   return (
     <Container>
       <GlobalStyles />
-
       {particles.map((p) => (
         <Particle
           key={p.id}
@@ -316,51 +285,57 @@ function Login({ onLogin }) {
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          exit={{ opacity: 0, scale: 0.9 }}
         >
+          {/* Header - Kompakt version */}
           <InputField
             variants={itemVariants}
-            style={{ textAlign: "center", marginBottom: "35px" }}
+            style={{ textAlign: "center", marginBottom: "15px" }}
           >
             <motion.div
-              animate={{ scale: [1, 1.1, 1] }}
-              transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+              animate={{ y: [0, -5, 0] }}
+              transition={{ repeat: Infinity, duration: 4 }}
             >
-              <FaTint size={60} color={theme.colors.bloodRed} />
+              <FaTint size={38} color={theme.colors.bloodRed} />
             </motion.div>
             <h2
-              style={{ color: "white", marginTop: "15px", fontWeight: "800" }}
+              style={{
+                color: "white",
+                marginTop: "8px",
+                fontSize: "1.1rem",
+                marginBottom: "4px",
+                fontWeight: "800",
+              }}
             >
               النظام المركزي لبنك الدم
             </h2>
-            <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.95rem" }}>
-              المنصة الوطنية لإدارة الموارد الدموية
+            <p
+              style={{
+                color: "rgba(255,255,255,0.4)",
+                fontSize: "0.75rem",
+                margin: 0,
+              }}
+            >
+              إدارة الموارد الدموية الوطنية
             </p>
           </InputField>
 
           <form onSubmit={handleSubmit(onSubmit)}>
             {error && (
-              <StatusBox
-                $type="error"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-              >
+              <StatusBox initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 {error}
               </StatusBox>
             )}
 
             <InputField variants={itemVariants}>
-              <Label>البريد الإلكتروني المهني</Label>
+              <Label>البريد الإلكتروني</Label>
               <Input
                 type="email"
                 placeholder="user@bloodbank.gov"
                 $error={!!errors.email}
                 {...register("email", { required: true })}
-                whileFocus="focus"
-                variants={inputFocusAnimation}
               />
               <IconPos $active={watched.email?.length > 0}>
-                <FaEnvelope />
+                <FaEnvelope size={14} />
               </IconPos>
             </InputField>
 
@@ -371,14 +346,12 @@ function Login({ onLogin }) {
                 placeholder="••••••••"
                 $error={!!errors.password}
                 {...register("password", { required: true })}
-                whileFocus="focus"
-                variants={inputFocusAnimation}
               />
               <IconPos $active={watched.password?.length > 0}>
-                <FaLock />
+                <FaLock size={14} />
               </IconPos>
               <PasswordToggle onClick={() => setShowPassword(!showPassword)}>
-                {showPassword ? <FaEyeSlash /> : <FaEye />}
+                {showPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
               </PasswordToggle>
             </InputField>
 
@@ -386,35 +359,37 @@ function Login({ onLogin }) {
               <SubmitBtn
                 type="submit"
                 disabled={loading}
-                whileHover="hover"
-                whileTap={{ scale: 0.98 }}
+                whileTap={{ scale: 0.97 }}
               >
                 {loading ? (
                   <Loader />
                 ) : (
                   <>
-                    <span>تسجيل الدخول للنظام</span>
-                    <BtnIcon variants={iconAnimation}>
-                      <FaArrowLeft style={{ transform: "rotate(180deg)" }} />
-                    </BtnIcon>
+                    <span>تسجيل الدخول</span>
+                    <FaArrowLeft
+                      style={{
+                        transform: "rotate(180deg)",
+                        fontSize: "0.8rem",
+                      }}
+                    />
                   </>
                 )}
               </SubmitBtn>
             </InputField>
           </form>
 
-          <InputField
-            variants={itemVariants}
-            style={{ marginTop: "25px", textAlign: "center" }}
+          <p
+            style={{
+              color: "rgba(255,255,255,0.2)",
+              fontSize: "0.6rem",
+              textAlign: "center",
+              marginTop: "12px",
+            }}
           >
-            <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.75rem" }}>
-              النظام مراقب ومحمي - الاستخدام المصرح به فقط
-            </p>
-          </InputField>
+            النظام مراقب ومحمي - الاستخدام المصرح به فقط
+          </p>
         </LoginBox>
       </AnimatePresence>
     </Container>
   );
 }
-
-export default Login;

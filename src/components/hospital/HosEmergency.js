@@ -38,11 +38,13 @@ const MainWrapper = styled.div`
   gap: 40px;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 60px 20px;
+  padding: 40px 20px;
 
-  @media (max-width: 1000px) {
+  /* Mobil-anpassning */
+  @media (max-width: 1024px) {
     grid-template-columns: 1fr;
-    justify-items: center;
+    gap: 30px;
+    padding: 20px;
   }
 `;
 
@@ -52,15 +54,18 @@ const ImageSection = styled.div`
   flex-direction: column;
   align-items: center;
   text-align: center;
-  position: sticky;
-  top: 60px;
+
+  /* På dator är den sticky, på mobil flyter den med */
+  @media (min-width: 1025px) {
+    position: sticky;
+    top: 60px;
+    height: fit-content;
+  }
 
   .img-container {
     width: 100%;
-    max-width: 500px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    max-width: 400px;
+    margin-bottom: 20px;
   }
 
   img {
@@ -74,73 +79,99 @@ const ImageSection = styled.div`
   h1 {
     color: #b71c1c;
     font-weight: 900;
-    margin: 25px 0 10px;
-    font-size: 2.5rem;
+    margin: 15px 0 10px;
+    font-size: 2rem; /* Mindre text för mobilen */
+
+    @media (min-width: 768px) {
+      font-size: 2.8rem;
+    }
   }
+
   p {
     color: #475569;
-    font-size: 1.2rem;
-    max-width: 400px;
-    line-height: 1.5;
+    font-size: 1.1rem;
+    max-width: 500px;
+    line-height: 1.6;
+    padding: 0 10px;
   }
 `;
 
 const FormContainer = styled.div`
   width: 100%;
   background: white;
-  border-radius: 40px;
+  border-radius: 30px; /* Något mjukare hörn på mobil */
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.08);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  height: 750px;
+  min-height: 650px; /* Använd min-height istället för fast height */
+
+  @media (min-width: 768px) {
+    border-radius: 40px;
+    height: 750px;
+  }
 `;
 
 const BloodHeader = styled.div`
   background: linear-gradient(135deg, #b71c1c 0%, #7f0000 100%);
   color: white;
-  padding: 35px 20px;
+  padding: 30px 20px;
   text-align: center;
 `;
 
 const SectionTitle = styled.h4`
   color: #1a237e;
-  margin: 20px 25px 12px;
+  margin: 20px 20px 12px;
   font-weight: 900;
   display: flex;
   align-items: center;
   gap: 12px;
   border-right: 5px solid #b71c1c;
   padding-right: 15px;
+  font-size: 1.1rem;
 `;
 
 const StyledSelect = styled.select`
-  width: calc(100% - 50px);
-  margin: 0 25px 15px;
+  width: calc(100% - 40px);
+  margin: 0 20px 15px;
   padding: 16px;
   border-radius: 15px;
   border: 2px solid #f1f5f9;
   font-family: "Cairo";
   font-weight: 700;
   background: #f8fafc;
+  font-size: 1rem;
+  outline: none;
+  cursor: pointer;
+
+  &:focus {
+    border-color: #b71c1c;
+  }
 `;
 
 const BloodGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  padding: 0 25px;
+  gap: 8px;
+  padding: 0 20px;
+
+  /* Justering för mycket små skärmar */
+  @media (max-width: 350px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
 `;
 
 const BloodButton = styled.button`
-  padding: 12px 0;
+  padding: 15px 0;
   border-radius: 12px;
   border: 2px solid ${(props) => (props.active ? "#b71c1c" : "transparent")};
   background: ${(props) => (props.active ? "#fff5f5" : "#f1f5f9")};
   color: ${(props) => (props.active ? "#b71c1c" : "#64748b")};
   font-weight: 900;
   cursor: pointer;
-  transition: 0.2s;
+  transition: all 0.2s;
+  font-size: 1rem;
+
   &:hover {
     background: ${(props) => (props.active ? "#fff5f5" : "#e2e8f0")};
   }
@@ -148,9 +179,14 @@ const BloodButton = styled.button`
 
 const ButtonArea = styled.div`
   position: relative;
-  margin: 20px 25px;
-  height: 80px;
-  margin-top: auto;
+  margin: 30px 20px;
+  height: 70px;
+  margin-top: auto; /* Trycker ner knappen till botten */
+
+  @media (min-width: 768px) {
+    height: 80px;
+    margin: 20px 25px 35px;
+  }
 `;
 
 const MainActionButton = styled(motion.button)`
@@ -160,25 +196,34 @@ const MainActionButton = styled(motion.button)`
   width: 100%;
   height: 100%;
   border: none;
-  border-radius: 22px;
+  border-radius: 20px;
   background: ${(props) => (props.success ? "#10b981" : "#b71c1c")};
   color: white;
   font-weight: 900;
-  font-size: 1.3rem;
+  font-size: 1.1rem;
   font-family: "Cairo";
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
+  box-shadow: 0 10px 20px rgba(183, 28, 28, 0.2);
+
+  @media (min-width: 768px) {
+    font-size: 1.3rem;
+    border-radius: 22px;
+  }
 
   ${(props) =>
     props.isIdle &&
     css`
       animation: ${pulse} 2s infinite;
     `}
+
   &:disabled {
     background: #94a3b8;
+    box-shadow: none;
+    cursor: not-allowed;
   }
 `;
 
@@ -199,7 +244,7 @@ function HosEmergency() {
     "إنخل",
     "الحراك",
     "تسيل",
-    "سحم الجولan",
+    "سحم الجولان",
     "خربة غزالة",
     "المسيفرة",
   ];
@@ -222,25 +267,32 @@ function HosEmergency() {
       <MainWrapper>
         <ImageSection>
           <div className="img-container">
+            {/* Se till att bildstigen stämmer för ditt projekt */}
             <img src="/assets/blood.png" alt="Daraa Blood Bank" />
           </div>
           <h1>قطرة دم تساوي حياة</h1>
           <p>
-            ساهم في إنقاذ الأرواح في محافظة درعا من خلال التبرع أو طلب الاستغاثة
-            العاجل.
+            نظام الاستجابة السريعة للطوارئ في محافظة درعا. نصل نداءك للمتبرعين
+            والفرق الطبية في ثوانٍ.
           </p>
         </ImageSection>
 
         <FormContainer>
           <BloodHeader>
-            <FaTint size={45} />
-            <h2 style={{ margin: "10px 0 0", fontWeight: 900 }}>
+            <FaTint size={40} />
+            <h2
+              style={{
+                margin: "10px 0 0",
+                fontWeight: 900,
+                fontSize: "1.5rem",
+              }}
+            >
               نظام الطوارئ الموحد
             </h2>
           </BloodHeader>
 
           <SectionTitle>
-            <FaMapMarkerAlt /> المنطقة الحالية في درعا:
+            <FaMapMarkerAlt /> المنطقة المستهدفة:
           </SectionTitle>
           <StyledSelect>
             {daraaAreas.map((area) => (

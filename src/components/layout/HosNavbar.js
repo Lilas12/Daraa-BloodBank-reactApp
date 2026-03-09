@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 
 import NotificationsBell from "../NotificationsBell";
 import {
@@ -13,27 +13,30 @@ import {
   FaBars,
   FaSignOutAlt,
   FaTint,
+  FaTimes,
 } from "react-icons/fa";
 
 const NavContainer = styled.header`
   background: #0f172a;
   color: white;
-  height: 80px;
+  height: 70px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 1.5rem;
   position: sticky;
   top: 0;
-  z-index: 1000;
+  z-index: 2000;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  direction: rtl; /* Stödjer arabiska */
+  direction: rtl;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const RightSection = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 15px;
 `;
 
 const Logo = styled.div`
@@ -41,7 +44,6 @@ const Logo = styled.div`
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  margin-left: 15px;
   h2 {
     font-size: 1.1rem;
     margin: 0;
@@ -51,34 +53,71 @@ const Logo = styled.div`
   }
 `;
 
-const NavLinksWrapper = styled.nav`
+// Skrivbordslänkar - döljs vid 1250px för att undvika krockar
+const DesktopLinks = styled.nav`
   display: flex;
-  gap: 4px;
+  gap: 5px;
 
-  @media (max-width: 1150px) {
-    display: ${({ $isOpen }) => ($isOpen ? "flex" : "none")};
-    flex-direction: column;
-    position: absolute;
-    top: 80px;
-    right: 0;
-    width: 100%;
-    background: #0f172a;
-    padding: 20px;
+  @media (max-width: 1250px) {
+    display: none;
   }
+`;
+
+// Mobilmenyn som glider ner
+const MobileDrawer = styled.nav`
+  position: fixed;
+  top: 70px;
+  right: 0;
+  left: 0;
+  background: #1e293b;
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+  gap: 5px;
+  z-index: 1999;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+  border-bottom: 3px solid #2563eb;
+
+  /* Animation */
+  transition: transform 0.3s ease-in-out;
+  transform: ${({ $isOpen }) =>
+    $isOpen ? "translateY(0)" : "translateY(-150%)"};
+
+  @media (min-width: 1251px) {
+    display: none;
+  }
+`;
+
+const Overlay = styled.div`
+  position: fixed;
+  top: 70px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(3px);
+  z-index: 1998;
+  display: ${({ $isOpen }) => ($isOpen ? "block" : "none")};
 `;
 
 const MenuLink = styled(NavLink)`
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 10px;
+  gap: 10px;
+  padding: 8px 12px;
   color: #94a3b8;
   text-decoration: none;
   border-radius: 10px;
-  transition: all 0.3s ease;
+  transition: 0.2s;
   font-weight: 600;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   white-space: nowrap;
+
+  .icon-span {
+    display: flex;
+    align-items: center;
+    font-size: 1.1rem;
+  }
 
   &:hover {
     background: rgba(255, 255, 255, 0.05);
@@ -89,12 +128,18 @@ const MenuLink = styled(NavLink)`
     background: #2563eb;
     color: white;
   }
+
+  @media (max-width: 1250px) {
+    width: 100%;
+    padding: 14px;
+    font-size: 1rem;
+  }
 `;
 
 const LeftActions = styled.div`
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 12px;
 `;
 
 const LogoutBtn = styled.button`
@@ -104,21 +149,46 @@ const LogoutBtn = styled.button`
   padding: 8px 12px;
   border-radius: 8px;
   font-weight: 700;
-  font-size: 0.85rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: 0.3s;
+  transition: 0.2s;
+
   &:hover {
     background: #ef4444;
     color: white;
+  }
+
+  @media (max-width: 600px) {
+    span {
+      display: none;
+    } /* Behåller bara ikonen på små mobiler */
+  }
+`;
+
+const Hamburger = styled.div`
+  display: none;
+  cursor: pointer;
+  font-size: 1.6rem;
+  color: white;
+  padding: 5px;
+
+  @media (max-width: 1250px) {
+    display: flex;
+    align-items: center;
   }
 `;
 
 const Navbar = ({ onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Stäng menyn automatiskt vid sidbyte
+  useEffect(() => {
+    setIsOpen(false);
+  }, [location.pathname]);
 
   const menuItems = [
     { name: "مخزون الدم", to: "/inventory", icon: <FaWarehouse /> },
@@ -127,53 +197,57 @@ const Navbar = ({ onLogout }) => {
     { name: "المواعيد", to: "/appointments", icon: <FaUserInjured /> },
     { name: "المستشفيات", to: "/request-blood", icon: <FaFileMedical /> },
     { name: "الإحصائيات", to: "/statistics", icon: <FaChartBar /> },
-    { name: "الإعدادات", to: "/settings", icon: <FaCog /> },
     { name: "التقارير", to: "/reports", icon: <FaChartBar /> },
+    { name: "الإعدادات", to: "/settings", icon: <FaCog /> },
   ];
 
   return (
-    <NavContainer>
-      <RightSection>
-        <Logo onClick={() => navigate("/")}>
-          <FaTint size={22} color="#ef4444" />
-          <h2>بنك الدم بدرعا</h2>
-        </Logo>
-        <NavLinksWrapper $isOpen={isOpen}>
-          {menuItems.map((item) => (
-            <MenuLink
-              key={item.to}
-              to={item.to}
-              onClick={() => setIsOpen(false)}
-            >
-              <span style={{ fontSize: "1rem" }}>{item.icon}</span>
-              <span>{item.name}</span>
-            </MenuLink>
-          ))}
-        </NavLinksWrapper>
-      </RightSection>
+    <>
+      <NavContainer>
+        <RightSection>
+          <Logo onClick={() => navigate("/")}>
+            <FaTint size={22} color="#ef4444" />
+            <h2>بنك الدم بدرعا</h2>
+          </Logo>
 
-      <LeftActions>
-        <NotificationsBell />
+          {/* DESKTOP NAV - Ikoner är valfria här, jag har behållit dem för enhetlighet */}
+          <DesktopLinks>
+            {menuItems.map((item) => (
+              <MenuLink key={item.to} to={item.to}>
+                <span className="icon-span">{item.icon}</span>
+                <span>{item.name}</span>
+              </MenuLink>
+            ))}
+          </DesktopLinks>
+        </RightSection>
 
-        <LogoutBtn onClick={onLogout}>
-          <span>خروج</span>
-          <FaSignOutAlt />
-        </LogoutBtn>
+        <LeftActions>
+          <NotificationsBell />
 
-        <div
-          onClick={() => setIsOpen(!isOpen)}
-          style={{
-            color: "white",
-            fontSize: "1.5rem",
-            cursor: "pointer",
-            display: "none",
-          }}
-          className="mobile-toggle"
-        >
-          <FaBars />
-        </div>
-      </LeftActions>
-    </NavContainer>
+          <LogoutBtn onClick={onLogout}>
+            <span>خروج</span>
+            <FaSignOutAlt />
+          </LogoutBtn>
+
+          <Hamburger onClick={() => setIsOpen(!isOpen)}>
+            {isOpen ? <FaTimes /> : <FaBars />}
+          </Hamburger>
+        </LeftActions>
+      </NavContainer>
+
+      {/* MOBIL MENY - Här är ikonerna mycket viktiga */}
+      <MobileDrawer $isOpen={isOpen}>
+        {menuItems.map((item) => (
+          <MenuLink key={item.to} to={item.to} onClick={() => setIsOpen(false)}>
+            <span className="icon-span">{item.icon}</span>
+            <span>{item.name}</span>
+          </MenuLink>
+        ))}
+      </MobileDrawer>
+
+      {/* KLICKA UTANFÖR FÖR ATT STÄNGA */}
+      <Overlay $isOpen={isOpen} onClick={() => setIsOpen(false)} />
+    </>
   );
 };
 

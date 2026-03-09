@@ -20,55 +20,121 @@ const pulseAnimation = keyframes`
 `;
 
 // --- 2. Styled Components ---
+
 const PageContainer = styled.div`
-  padding: 40px;
+  padding: 20px;
   background-color: #f8fafc;
   min-height: 100vh;
   direction: rtl;
   font-family: "Inter", "Segoe UI", sans-serif;
   animation: ${fadeInUp} 0.6s ease-out;
+
+  @media (min-width: 768px) {
+    padding: 40px;
+  }
 `;
 
 const WelcomeBanner = styled.div`
   background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
   color: white;
-  padding: 50px;
-  border-radius: 35px;
+  padding: 30px;
+  border-radius: 25px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
-  margin-bottom: 40px;
+  margin-bottom: 30px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 20px;
   position: relative;
   overflow: hidden;
 
-  &::before {
-    content: "";
-    position: absolute;
-    width: 300px;
-    height: 300px;
-    background: radial-gradient(
-      circle,
-      rgba(255, 255, 255, 0.1) 0%,
-      rgba(255, 255, 255, 0) 70%
-    );
-    top: -100px;
-    left: -100px;
+  @media (min-width: 768px) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 50px;
+    border-radius: 35px;
+    margin-bottom: 40px;
+  }
+
+  h1 {
+    font-size: 1.8rem;
+    margin: 0;
+    font-weight: 900;
+    @media (min-width: 768px) {
+      font-size: 2.8rem;
+    }
+  }
+
+  p {
+    opacity: 0.9;
+    margin-top: 8px;
+    font-size: 1.1rem;
+    font-weight: 300;
+    @media (min-width: 768px) {
+      font-size: 1.3rem;
+      margin-top: 12px;
+    }
+  }
+`;
+
+const StatsGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  margin-bottom: 30px;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    margin-bottom: 40px;
+  }
+`;
+
+const MainContentGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 25px;
+
+  @media (min-width: 1024px) {
+    grid-template-columns: 2.2fr 1fr;
+    gap: 35px;
+  }
+`;
+
+const InventoryGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+
+  @media (min-width: 480px) {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+
+  @media (min-width: 768px) {
+    gap: 25px;
   }
 `;
 
 const Card = styled.div`
   background: white;
-  border-radius: 30px;
-  padding: 30px;
+  border-radius: 24px;
+  padding: 20px;
   border: 1px solid rgba(226, 232, 240, 0.8);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
+  @media (min-width: 768px) {
+    border-radius: 30px;
+    padding: 30px;
+  }
+
   &:hover {
     transform: translateY(-8px);
     box-shadow: 0 20px 30px rgba(0, 0, 0, 0.07);
-
     .icon-box {
       transform: scale(1.1) rotate(5deg);
     }
@@ -77,8 +143,8 @@ const Card = styled.div`
 
 const BloodCard = styled.div`
   background: white;
-  padding: 25px 15px;
-  border-radius: 24px;
+  padding: 20px 10px;
+  border-radius: 20px;
   border: 2px solid #f1f5f9;
   text-align: center;
   transition: all 0.3s ease;
@@ -101,19 +167,24 @@ const BloodCard = styled.div`
 const IconBox = styled.div`
   background: ${(props) => props.color}15;
   color: ${(props) => props.color};
-  padding: 18px;
-  border-radius: 20px;
+  padding: 14px;
+  border-radius: 16px;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+
+  @media (min-width: 768px) {
+    padding: 18px;
+    border-radius: 20px;
+  }
 `;
 
 const ListItem = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 18px 12px;
+  padding: 15px 10px;
   border-radius: 16px;
   transition: background 0.2s ease;
   animation: ${slideIn} 0.4s ease-out forwards;
@@ -126,10 +197,10 @@ const ListItem = styled.div`
 `;
 
 const ProgressBase = styled.div`
-  height: 10px;
+  height: 8px;
   background: #f1f5f9;
   border-radius: 20px;
-  margin: 15px 0;
+  margin: 12px 0;
   overflow: hidden;
 `;
 
@@ -144,24 +215,38 @@ const ProgressFill = styled.div`
 const StatusBadge = styled.span`
   background: ${(props) => props.color}15;
   color: ${(props) => props.color};
-  padding: 8px 16px;
-  border-radius: 12px;
-  font-size: 0.85rem;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 0.75rem;
   font-weight: 700;
   backdrop-filter: blur(4px);
+  white-space: nowrap;
+
+  @media (min-width: 768px) {
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+  }
 `;
 
 const QuickButton = styled.button`
-  padding: 14px 28px;
-  border-radius: 18px;
+  padding: 12px 24px;
+  border-radius: 16px;
   border: none;
   background: #ef4444;
   color: white;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 0.9rem;
   cursor: pointer;
   box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);
   transition: all 0.3s ease;
+  width: fit-content;
+
+  @media (min-width: 768px) {
+    padding: 14px 28px;
+    border-radius: 18px;
+    font-size: 1rem;
+  }
 
   &:hover {
     transform: scale(1.05);
@@ -200,19 +285,8 @@ const DashboardPage = () => {
     <PageContainer>
       <WelcomeBanner>
         <div>
-          <h1 style={{ fontSize: "2.8rem", margin: 0, fontWeight: "900" }}>
-            بنك الدم الوطني - درعا
-          </h1>
-          <p
-            style={{
-              opacity: 0.9,
-              marginTop: "12px",
-              fontSize: "1.3rem",
-              fontWeight: "300",
-            }}
-          >
-            مرحباً بك مجدداً في نظام الإدارة المركزي
-          </p>
+          <h1>بنك الدم الوطني - درعا</h1>
+          <p>مرحباً بك مجدداً في نظام الإدارة المركزي</p>
         </div>
         <QuickButton onClick={() => navigate("/add")}>
           <i className="fas fa-plus-circle" style={{ marginLeft: "10px" }}></i>
@@ -220,14 +294,7 @@ const DashboardPage = () => {
         </QuickButton>
       </WelcomeBanner>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-          gap: "30px",
-          marginBottom: "40px",
-        }}
-      >
+      <StatsGrid>
         {summaryStats.map((s, i) => (
           <Card key={i}>
             <div
@@ -238,25 +305,25 @@ const DashboardPage = () => {
               }}
             >
               <IconBox color={s.color} className="icon-box">
-                <i className={`fas ${s.icon} fa-2xl`}></i>
+                <i className={`fas ${s.icon} fa-xl`}></i>
               </IconBox>
               <StatusBadge color={s.color}>
                 <i
                   className="fas fa-arrow-up"
                   style={{ marginLeft: "5px" }}
                 ></i>
-                5% الشهر الحالي
+                5%
               </StatusBadge>
             </div>
-            <div style={{ marginTop: "25px" }}>
-              <h4 style={{ color: "#64748b", margin: 0, fontSize: "1.1rem" }}>
+            <div style={{ marginTop: "20px" }}>
+              <h4 style={{ color: "#64748b", margin: 0, fontSize: "1rem" }}>
                 {s.title}
               </h4>
               <p
                 style={{
-                  fontSize: "2.4rem",
+                  fontSize: "2rem",
                   fontWeight: "900",
-                  margin: "8px 0",
+                  margin: "5px 0",
                   color: "#1e293b",
                 }}
               >
@@ -265,45 +332,33 @@ const DashboardPage = () => {
             </div>
           </Card>
         ))}
-      </div>
+      </StatsGrid>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "2.2fr 1fr",
-          gap: "35px",
-        }}
-      >
+      <MainContentGrid>
         <Card>
           <div
             style={{
               display: "flex",
               justifyContent: "space-between",
-              marginBottom: "35px",
+              marginBottom: "25px",
               alignItems: "center",
             }}
           >
-            <h3 style={{ margin: 0, fontSize: "1.5rem", fontWeight: "800" }}>
+            <h3 style={{ margin: 0, fontSize: "1.3rem", fontWeight: "800" }}>
               <i
                 className="fas fa-chart-pie"
-                style={{ marginLeft: "12px", color: "#ef4444" }}
+                style={{ marginLeft: "10px", color: "#ef4444" }}
               ></i>
-              حالة المخزون بالتفصيل
+              حالة المخزون
             </h3>
             <StatusBadge color="#1e293b">تحديث تلقائي</StatusBadge>
           </div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
-              gap: "25px",
-            }}
-          >
+          <InventoryGrid>
             {bloodInventory.map((blood, i) => (
               <BloodCard key={i} lowStock={blood.lowStock} color={blood.color}>
                 <div
                   style={{
-                    fontSize: "1.8rem",
+                    fontSize: "1.5rem",
                     fontWeight: "900",
                     color: blood.color,
                   }}
@@ -312,8 +367,8 @@ const DashboardPage = () => {
                 </div>
                 <div
                   style={{
-                    fontSize: "1.1rem",
-                    margin: "8px 0",
+                    fontSize: "1rem",
+                    margin: "5px 0",
                     fontWeight: "600",
                     color: "#475569",
                   }}
@@ -327,25 +382,25 @@ const DashboardPage = () => {
                   />
                 </ProgressBase>
                 <StatusBadge color={blood.lowStock ? "#ef4444" : "#10b981"}>
-                  {blood.lowStock ? "مخزون حرج" : "مخزon آمن"}
+                  {blood.lowStock ? "حرج" : "آمن"}
                 </StatusBadge>
               </BloodCard>
             ))}
-          </div>
+          </InventoryGrid>
         </Card>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "30px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "25px" }}>
           <Card>
             <h3
               style={{
-                marginBottom: "25px",
-                fontSize: "1.4rem",
+                marginBottom: "20px",
+                fontSize: "1.3rem",
                 fontWeight: "800",
               }}
             >
               <i
                 className="fas fa-clock"
-                style={{ marginLeft: "12px", color: "#3b82f6" }}
+                style={{ marginLeft: "10px", color: "#3b82f6" }}
               ></i>
               مواعيد اليوم
             </h3>
@@ -356,25 +411,29 @@ const DashboardPage = () => {
             ].map((app, i) => (
               <ListItem key={i} delay={i * 0.1}>
                 <div>
-                  <div style={{ fontWeight: "700", color: "#1e293b" }}>
+                  <div
+                    style={{
+                      fontWeight: "700",
+                      color: "#1e293b",
+                      fontSize: "0.95rem",
+                    }}
+                  >
                     {app.name}
                   </div>
-                  <div style={{ fontSize: "0.85rem", color: "#64748b" }}>
+                  <div style={{ fontSize: "0.8rem", color: "#64748b" }}>
                     {app.type}
                   </div>
                 </div>
                 <div style={{ textAlign: "left" }}>
-                  <div style={{ fontWeight: "800", color: "#3b82f6" }}>
+                  <div
+                    style={{
+                      fontWeight: "800",
+                      color: "#3b82f6",
+                      fontSize: "0.9rem",
+                    }}
+                  >
                     {app.time}
                   </div>
-                  <i
-                    className="fas fa-chevron-left"
-                    style={{
-                      fontSize: "0.7rem",
-                      color: "#cbd5e1",
-                      marginTop: "4px",
-                    }}
-                  ></i>
                 </div>
               </ListItem>
             ))}
@@ -390,15 +449,15 @@ const DashboardPage = () => {
               style={{
                 display: "flex",
                 alignItems: "center",
-                marginBottom: "15px",
+                marginBottom: "10px",
               }}
             >
               <IconBox
                 color="#ef4444"
                 style={{
-                  padding: "10px",
-                  borderRadius: "12px",
-                  marginLeft: "15px",
+                  padding: "8px",
+                  borderRadius: "10px",
+                  marginLeft: "12px",
                 }}
               >
                 <i className="fas fa-exclamation-triangle"></i>
@@ -407,7 +466,7 @@ const DashboardPage = () => {
                 style={{
                   color: "#991b1b",
                   margin: 0,
-                  fontSize: "1.2rem",
+                  fontSize: "1.1rem",
                   fontWeight: "800",
                 }}
               >
@@ -416,19 +475,18 @@ const DashboardPage = () => {
             </div>
             <p
               style={{
-                fontSize: "1rem",
+                fontSize: "0.9rem",
                 color: "#b91c1c",
-                lineHeight: "1.6",
+                lineHeight: "1.5",
                 margin: 0,
               }}
             >
               يوجد نقص حاد في فصيلة{" "}
-              <span style={{ fontWeight: "900" }}>O-</span>. يرجى التواصل مع
-              المتبرعين المسجلين بشكل فوري.
+              <span style={{ fontWeight: "900" }}>O-</span>.
             </p>
           </Card>
         </div>
-      </div>
+      </MainContentGrid>
     </PageContainer>
   );
 };
