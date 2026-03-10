@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import styled, { createGlobalStyle, keyframes, css } from "styled-components"; // Importera css här!
+import styled, { createGlobalStyle, keyframes, css } from "styled-components";
 import {
   FaTint,
   FaEnvelope,
@@ -8,7 +8,7 @@ import {
   FaEye,
   FaEyeSlash,
 } from "react-icons/fa";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
@@ -32,8 +32,17 @@ const theme = {
   },
 };
 
-const spin = keyframes` from { transform: rotate(0deg); } to { transform: rotate(360deg); } `;
-const float = keyframes` 0% { transform: translateY(0px); opacity: 0; } 50% { opacity: 0.2; } 100% { transform: translateY(-100vh); opacity: 0; } `;
+// 1. Definiera keyframes separat
+const spin = keyframes`
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+`;
+
+const float = keyframes`
+  0% { transform: translateY(0px); opacity: 0; }
+  50% { opacity: 0.2; }
+  100% { transform: translateY(-100vh); opacity: 0; }
+`;
 
 const GlobalStyles = createGlobalStyle`
   body, html {
@@ -43,11 +52,24 @@ const GlobalStyles = createGlobalStyle`
   }
 `;
 
-// FIX: Använd css-helper för animationen
+// 2. Använd css-hjälparen för animationer
 const Loader = styled(FaCircleNotch)`
   animation: ${css`
     ${spin} 1s linear infinite
   `};
+`;
+
+const Particle = styled.div`
+  position: absolute;
+  background: ${theme.colors.bloodRed};
+  border-radius: 50%;
+  bottom: -10px;
+  /* Här skickar vi in variabler via props men wrappar i css */
+  animation: ${(props) => css`
+    ${float} ${props.$dur} linear infinite
+  `};
+  animation-delay: ${(props) => props.$delay};
+  pointer-events: none;
 `;
 
 const Container = styled.div`
@@ -62,26 +84,16 @@ const Container = styled.div`
   overflow: hidden;
 `;
 
-const Particle = styled.div`
-  position: absolute;
-  background: ${theme.colors.bloodRed};
-  border-radius: 50%;
-  bottom: -10px;
-  animation: ${(props) => css`
-    ${float} ${props.$dur} linear infinite
-  `};
-  animation-delay: ${(props) => props.$delay};
-  pointer-events: none;
-`;
-
 const LoginBox = styled(motion.div)`
   background: ${theme.colors.glass};
   backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid ${theme.colors.border};
   border-radius: 20px;
   width: 90%;
   max-width: 360px;
   padding: 30px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
   z-index: 10;
 `;
 
@@ -94,21 +106,24 @@ const Label = styled.label`
   color: rgba(255, 255, 255, 0.7);
   font-size: 0.8rem;
   margin-bottom: 5px;
+  margin-right: 4px;
 `;
+
 const Input = styled.input`
   width: 100%;
   padding: 12px 42px 12px 40px;
   background: ${theme.colors.inputBg};
-  border-radius: 12px;
   border: 1.5px solid
     ${(props) => (props.$error ? theme.colors.red : "transparent")};
+  border-radius: 12px;
   color: white;
   font-size: 16px;
   box-sizing: border-box;
-  font-family: "Cairo";
+  font-family: "Cairo", sans-serif;
   &:focus {
     outline: none;
     border-color: ${theme.colors.bloodRed};
+    background: rgba(255, 255, 255, 0.1);
   }
 `;
 
@@ -154,6 +169,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
   const {
     register,
     handleSubmit,
@@ -180,7 +196,7 @@ export default function Login() {
       );
       navigate("/");
     } catch (err) {
-      setError("خطأ في الدخول.. تأكد من البيانات");
+      setError("خطأ في الدخول.. يرجى التأكد من البيانات");
     } finally {
       setLoading(false);
     }
@@ -205,55 +221,72 @@ export default function Login() {
           $delay={p.delay}
         />
       ))}
-      <LoginBox initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-        <div style={{ textAlign: "center", marginBottom: "20px" }}>
-          <FaTint size={40} color={theme.colors.bloodRed} />
-          <h2 style={{ color: "white", margin: "10px 0 5px 0" }}>بنك الدم</h2>
-        </div>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          {error && (
-            <div
-              style={{
-                color: "#ff8a80",
-                textAlign: "center",
-                marginBottom: "10px",
-              }}
+
+      <AnimatePresence>
+        <LoginBox
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <div style={{ textAlign: "center", marginBottom: "20px" }}>
+            <FaTint size={40} color={theme.colors.bloodRed} />
+            <h2 style={{ color: "white", marginTop: "10px" }}>
+              بنك الدم المركزي
+            </h2>
+          </div>
+
+          <form onSubmit={handleSubmit(onSubmit)}>
+            {error && (
+              <div
+                style={{
+                  color: "#ff8a80",
+                  fontSize: "0.8rem",
+                  textAlign: "center",
+                  marginBottom: "10px",
+                }}
+              >
+                {error}
+              </div>
+            )}
+
+            <InputField>
+              <Label>البريد الإلكتروني</Label>
+              <Input
+                type="email"
+                placeholder="user@domain.com"
+                $error={!!errors.email}
+                {...register("email", { required: true })}
+              />
+              <IconPos $active={watched.email?.length > 0}>
+                <FaEnvelope size={14} />
+              </IconPos>
+            </InputField>
+
+            <InputField>
+              <Label>كلمة المرور</Label>
+              <Input
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                $error={!!errors.password}
+                {...register("password", { required: true })}
+              />
+              <IconPos $active={watched.password?.length > 0}>
+                <FaLock size={14} />
+              </IconPos>
+              <PasswordToggle onClick={() => setShowPassword(!showPassword)}>
+                {showPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
+              </PasswordToggle>
+            </InputField>
+
+            <SubmitBtn
+              type="submit"
+              disabled={loading}
+              whileTap={{ scale: 0.98 }}
             >
-              {error}
-            </div>
-          )}
-          <InputField>
-            <Label>البريد الإلكتروني</Label>
-            <Input
-              type="email"
-              placeholder="user@domain.com"
-              $error={!!errors.email}
-              {...register("email", { required: true })}
-            />
-            <IconPos $active={watched.email?.length > 0}>
-              <FaEnvelope size={14} />
-            </IconPos>
-          </InputField>
-          <InputField>
-            <Label>كلمة المرور</Label>
-            <Input
-              type={showPassword ? "text" : "password"}
-              placeholder="••••••••"
-              $error={!!errors.password}
-              {...register("password", { required: true })}
-            />
-            <IconPos $active={watched.password?.length > 0}>
-              <FaLock size={14} />
-            </IconPos>
-            <PasswordToggle onClick={() => setShowPassword(!showPassword)}>
-              {showPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
-            </PasswordToggle>
-          </InputField>
-          <SubmitBtn type="submit" disabled={loading}>
-            {loading ? <Loader /> : "تسجيل الدخول"}
-          </SubmitBtn>
-        </form>
-      </LoginBox>
+              {loading ? <Loader /> : "تسجيل الدخول"}
+            </SubmitBtn>
+          </form>
+        </LoginBox>
+      </AnimatePresence>
     </Container>
   );
 }
