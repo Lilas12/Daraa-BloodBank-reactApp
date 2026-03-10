@@ -225,7 +225,7 @@ const Navbar = ({ onLogout }) => {
           <NotificationsBell />
 
           <LogoutBtn onClick={onLogout}>
-            <span>خروج</span>
+            <span>خروج تسجيل</span>
             <FaSignOutAlt />
           </LogoutBtn>
 
