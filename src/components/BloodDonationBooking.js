@@ -30,7 +30,6 @@ const PageWrapper = styled.div`
   overflow-x: hidden;
 `;
 
-// مكون جديد للأيقونة المتحركة لإصلاح تحذير float
 const FloatingHeart = styled.div`
   animation: ${float} 3s ease-in-out infinite;
   display: inline-block;
@@ -46,7 +45,6 @@ const MainContainer = styled(motion.div)`
   border-radius: 30px;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
   overflow: hidden;
-
   @media (max-width: 992px) {
     grid-template-columns: 1fr;
   }
@@ -71,7 +69,6 @@ const InputGrid = styled.div`
   grid-template-columns: 1fr;
   gap: 20px;
   margin-top: 10px;
-
   @media (min-width: 600px) {
     grid-template-columns: 1fr 1fr;
   }
@@ -125,7 +122,6 @@ const ToggleBtn = styled.button`
   color: ${(props) => (props.active ? "white" : "#64748b")};
   cursor: pointer;
   font-weight: bold;
-  white-space: nowrap;
 `;
 
 const HospitalCard = styled.div`
@@ -152,9 +148,11 @@ const SubmitBtn = styled(motion.button)`
   font-weight: 800;
   cursor: pointer;
   margin-top: 25px;
+  transition: all 0.3s ease;
   &:disabled {
     background: #cbd5e1;
     cursor: not-allowed;
+    opacity: 0.7;
   }
 `;
 
@@ -194,8 +192,14 @@ const BloodDonationBooking = () => {
   ];
 
   const currentHospital = hospitals.find((h) => h.id === selectedHosp);
+
+  // شروط الأهلية الطبية
   const isEligible =
     answers.q1 === "yes" && answers.q2 === "no" && answers.q3 === "no";
+
+  // شروط صحة المدخلات في الفورم
+  const isFormValid =
+    userData.name.trim().length >= 4 && /09\d{8}/.test(userData.phone);
 
   const resetForm = () => {
     setAnswers({ q1: null, q2: null, q3: null });
@@ -218,11 +222,13 @@ const BloodDonationBooking = () => {
             boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
           }}
         >
-          {/* تم استخدام float هنا لإزالة التحذير */}
           <FloatingHeart>
             <FaHeart size={60} />
           </FloatingHeart>
-          <h2 style={{ marginTop: "15px" }}>تم الحجز!</h2>
+          <h2 style={{ marginTop: "15px" }}>تم الحجز بنجاح!</h2>
+          <p>
+            شكراً لك يا <strong>{userData.name}</strong>
+          </p>
           <p>المكان: {currentHospital.name}</p>
           <p>
             التاريخ: {userData.day} {userData.month} 2026
@@ -328,7 +334,7 @@ const BloodDonationBooking = () => {
                       onChange={(e) =>
                         setUserData({ ...userData, name: e.target.value })
                       }
-                      placeholder="الاسم الثلاثي"
+                      placeholder="أدخل اسمك الثلاثي"
                     />
                   </InputField>
                   <InputField>
@@ -340,7 +346,20 @@ const BloodDonationBooking = () => {
                         setUserData({ ...userData, phone: e.target.value })
                       }
                       placeholder="09xxxxxxxx"
+                      maxLength="10"
                     />
+                    {!/09\d{8}/.test(userData.phone) &&
+                      userData.phone.length > 0 && (
+                        <span
+                          style={{
+                            fontSize: "0.7rem",
+                            color: "#c53030",
+                            marginTop: "5px",
+                          }}
+                        >
+                          يجب أن يبدأ بـ 09 ويتكون من 10 أرقام
+                        </span>
+                      )}
                   </InputField>
                   <InputField>
                     <label>اليوم</label>
@@ -386,12 +405,27 @@ const BloodDonationBooking = () => {
                     </select>
                   </InputField>
                 </InputGrid>
+
                 <SubmitBtn
-                  whileHover={{ scale: 1.02 }}
-                  onClick={() => setSuccess(true)}
+                  whileHover={isFormValid ? { scale: 1.02 } : {}}
+                  whileTap={isFormValid ? { scale: 0.98 } : {}}
+                  onClick={() => isFormValid && setSuccess(true)}
+                  disabled={!isFormValid}
                 >
                   تأكيد الموعد في {currentHospital.name} <FaArrowRight />
                 </SubmitBtn>
+                {!isFormValid && (
+                  <p
+                    style={{
+                      fontSize: "0.8rem",
+                      color: "#64748b",
+                      textAlign: "center",
+                      marginTop: "10px",
+                    }}
+                  >
+                    * يرجى إكمال البيانات لتتمكن من الحجز
+                  </p>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
