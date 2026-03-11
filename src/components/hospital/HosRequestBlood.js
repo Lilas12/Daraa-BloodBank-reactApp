@@ -32,11 +32,11 @@ const PageContainer = styled.div`
 
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: 1fr; /* Mobil: 1 kolumn */
+  grid-template-columns: 1fr;
   gap: 20px;
 
   @media (min-width: 1100px) {
-    grid-template-columns: 1fr 1.8fr; /* Dator: 2 kolumner */
+    grid-template-columns: 1fr 1.8fr;
     gap: 30px;
   }
 `;
@@ -89,7 +89,7 @@ const Form = styled.form`
     font-family: "Cairo";
     font-size: 1rem;
     transition: 0.3s;
-    box-sizing: border-box; /* Viktigt för responsivitet */
+    box-sizing: border-box;
 
     &:focus {
       outline: none;
@@ -166,12 +166,10 @@ const Table = styled.table`
   border-collapse: separate;
   border-spacing: 0 10px;
 
-  /* Mobil-anpassning av tabell */
   @media (max-width: 768px) {
     thead {
-      display: none; /* Dölj rubriker på mobil */
+      display: none;
     }
-
     tr {
       display: block;
       margin-bottom: 15px;
@@ -181,7 +179,6 @@ const Table = styled.table`
       padding: 10px;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
     }
-
     td {
       display: flex;
       justify-content: space-between;
@@ -190,9 +187,8 @@ const Table = styled.table`
       border: none !important;
       text-align: left;
       font-size: 0.9rem;
-
       &:before {
-        content: attr(data-label); /* Visar rubriken via data-label */
+        content: attr(data-label);
         font-weight: bold;
         color: #94a3b8;
         margin-left: 10px;
@@ -200,7 +196,6 @@ const Table = styled.table`
     }
   }
 
-  /* Dator-stil */
   @media (min-width: 769px) {
     th {
       padding: 15px;
@@ -226,7 +221,8 @@ const Table = styled.table`
 `;
 
 // --- Huvudkomponent ---
-const HospitalPage = ({ onSendOrder, externalSales = [] }) => {
+// Här lägger vi till standardvärden (= () => {}) för att slippa "is not a function" felet
+const HospitalPage = ({ onSendOrder = () => {}, externalSales = [] }) => {
   const [revenue, setRevenue] = useState(() => {
     const saved = localStorage.getItem("totalRevenue");
     return saved ? parseInt(saved) : 3500000;
@@ -263,11 +259,14 @@ const HospitalPage = ({ onSendOrder, externalSales = [] }) => {
       productName: formData.productType === "plasma" ? "بلازما" : "دم كامل",
       status: "pending",
       timestamp: new Date().toLocaleTimeString("ar-SA"),
+      customerName: "طلب مستشفى", // Viktigt för fakturan i BloodSalesPage
     };
 
+    // Anropar funktionen som vi fick från App.js
     onSendOrder(newOrder);
+
+    // Återställ formuläret
     setFormData({
-      ...formData,
       patientName: "",
       bloodType: "A+",
       productType: "whole_blood",
@@ -439,7 +438,7 @@ const HospitalPage = ({ onSendOrder, externalSales = [] }) => {
                           <Indicator status={order.status} />
                           {order.status === "accepted"
                             ? "تم الاستلام"
-                            : "انتظار"}
+                            : "انتظار الموافقة"}
                         </StatusBadge>
                         <span
                           style={{

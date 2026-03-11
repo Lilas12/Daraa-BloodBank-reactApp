@@ -8,7 +8,7 @@ const fadeInUp = keyframes`
 `;
 
 const PageContainer = styled.div`
-  padding: 15px; /* Mindre padding på mobil */
+  padding: 15px;
   background: #f8fafc;
   min-height: 100vh;
   direction: rtl;
@@ -21,7 +21,7 @@ const PageContainer = styled.div`
 
 const HeaderSection = styled.div`
   display: flex;
-  flex-direction: column; /* Stapla vertikalt på mobil */
+  flex-direction: column;
   gap: 20px;
   margin-bottom: 30px;
 
@@ -34,7 +34,7 @@ const HeaderSection = styled.div`
 
 const StatsGrid = styled.div`
   display: grid;
-  grid-template-columns: 1fr; /* En kolumn på mobil */
+  grid-template-columns: 1fr;
   gap: 15px;
   margin-bottom: 30px;
 
@@ -67,7 +67,6 @@ const StatCard = styled.div`
   }
 `;
 
-// --- RESPONSIV TABELL-STRATEGI ---
 const TableContainer = styled.div`
   background: white;
   border-radius: 25px;
@@ -83,14 +82,12 @@ const StyledTable = styled.table`
   width: 100%;
   border-collapse: collapse;
 
-  /* Dölj tabellhuvudet på mobil */
   thead {
     @media (max-width: 767px) {
       display: none;
     }
   }
 
-  /* Gör rader till "kort" på mobil */
   tr {
     @media (max-width: 767px) {
       display: block;
@@ -118,9 +115,8 @@ const StyledTable = styled.table`
       align-items: center;
       border: none;
       padding: 8px 5px;
-      text-align: left;
+      text-align: right;
 
-      /* Lägg till etiketter för data på mobil */
       &:before {
         content: attr(data-label);
         font-weight: bold;
@@ -172,7 +168,7 @@ const ModalOverlay = styled.div`
   align-items: center;
   z-index: 1000;
   backdrop-filter: blur(5px);
-  padding: 20px; /* Padding så modalen inte nuddar skärmkant på mobil */
+  padding: 20px;
 `;
 
 const Modal = styled.div`
@@ -180,7 +176,7 @@ const Modal = styled.div`
   padding: 25px;
   border-radius: 30px;
   width: 100%;
-  max-width: 500px; /* Maxbredd på dator */
+  max-width: 500px;
   animation: ${fadeInUp} 0.3s ease;
 
   @media (min-width: 768px) {
@@ -201,7 +197,7 @@ const Modal = styled.div`
     padding: 12px;
     border: 1px solid #e2e8f0;
     border-radius: 10px;
-    box-sizing: border-box; /* Viktigt för att padding inte ska öka bredden */
+    box-sizing: border-box;
   }
 `;
 
@@ -209,11 +205,15 @@ const AppointmentsPage = () => {
   const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]);
   const [showModal, setShowModal] = useState(false);
+
+  // Dagens datum som förvalt värde
+  const today = new Date().toISOString().split("T")[0];
+
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
     type: "A+",
-    date: "",
+    date: today,
     time: "09:00",
   });
 
@@ -232,7 +232,7 @@ const AppointmentsPage = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.name || !formData.date)
-      return alert("Vänligen fyll i alla fält");
+      return alert("يرجى ملء جميع الحقول المطلوبة");
 
     const newEntry = {
       ...formData,
@@ -243,7 +243,13 @@ const AppointmentsPage = () => {
     const updated = [newEntry, ...appointments];
     saveToStorage(updated);
     setShowModal(false);
-    setFormData({ name: "", phone: "", type: "A+", date: "", time: "09:00" });
+    setFormData({
+      name: "",
+      phone: "",
+      type: "A+",
+      date: today,
+      time: "09:00",
+    });
   };
 
   const toggleStatus = (id) => {
@@ -260,7 +266,7 @@ const AppointmentsPage = () => {
   };
 
   const deleteAppt = (id) => {
-    if (window.confirm("Är du säker på att du vill ta bort detta möte?")) {
+    if (window.confirm("هل أنت متأكد من حذف هذا الموعد؟")) {
       const updated = appointments.filter((a) => a.id !== id);
       saveToStorage(updated);
     }
@@ -380,6 +386,7 @@ const AppointmentsPage = () => {
                 <label>اسم المتبرع</label>
                 <input
                   type="text"
+                  required
                   value={formData.name}
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
@@ -419,6 +426,8 @@ const AppointmentsPage = () => {
                 <label>التاريخ</label>
                 <input
                   type="date"
+                  required
+                  min="1900-01-01" // Kalender från 1900
                   value={formData.date}
                   onChange={(e) =>
                     setFormData({ ...formData, date: e.target.value })

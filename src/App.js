@@ -10,6 +10,7 @@ import {
 
 import "./AppLayout.css";
 import Navbar from "./components/layout/HosNavbar";
+import BloodDonationBooking from "./components/BloodDonationBooking";
 import Aappointment from "./pages/AppointmentsPage";
 import Settings from "./pages/HosSettings";
 import Statistics from "./pages/HosStatistics";
@@ -18,7 +19,7 @@ import InventoryPage from "./pages/HosInventoryPage";
 import BloodShopPage from "./pages/BloodShopPage";
 import DashboardPage from "./pages/DashboardPage";
 import ReportsPage from "./pages/ReportsPage";
-import Login from "./components/HosLogin"; // Ändra till HosLogin om din fil heter så
+import Login from "./components/HosLogin";
 import RequestBlood from "./components/hospital/HosRequestBlood";
 import Emergency from "./components/hospital/HosEmergency";
 import Footer from "./components/HosFooter";
@@ -27,8 +28,24 @@ function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // --- State för att hålla ordrar mellan sidorna ---
+  const [externalOrders, setExternalOrders] = useState([]);
+
+  // Funktion för att ta emot ny order från sjukhuset
+  const handleSendOrder = (newOrder) => {
+    setExternalOrders((prev) => [newOrder, ...prev]);
+  };
+
+  // Funktion för att uppdatera status
+  const updateOrderStatus = (orderId, newStatus) => {
+    setExternalOrders((prev) =>
+      prev.map((order) =>
+        order.id === orderId ? { ...order, status: newStatus } : order,
+      ),
+    );
+  };
+
   useEffect(() => {
-    // Tvingar session-persistence för utloggning vid flikstängning
     setPersistence(auth, browserSessionPersistence)
       .then(() => {
         return onAuthStateChanged(auth, (currentUser) => {
@@ -63,16 +80,44 @@ function App() {
           <Navbar user={user} onLogout={handleLogout} />
           <main className="page-content">
             <Routes>
+              {/* --- Huvudrutter --- */}
               <Route path="/" element={<DashboardPage />} />
+
+              {/* VIKTIGT: Denna måste ligga före path="*" */}
+              <Route path="/book-donation" element={<BloodDonationBooking />} />
+
+              <Route path="/inventory" element={<InventoryPage />} />
+              <Route path="/appointments" element={<Aappointment />} />
+              <Route path="/statistics" element={<Statistics />} />
+              <Route path="/reports" element={<ReportsPage />} />
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/settings" element={<Settings />} />
-              <Route path="/inventory" element={<InventoryPage />} />
-              <Route path="/statistics" element={<Statistics />} />
-              <Route path="/appointments" element={<Aappointment />} />
-              <Route path="/request-blood" element={<RequestBlood />} />
               <Route path="/emergency" element={<Emergency />} />
-              <Route path="/blood-orders" element={<BloodShopPage />} />
-              <Route path="/reports" element={<ReportsPage />} />
+
+              {/* Sjukhusbeställningar */}
+              <Route
+                path="/request-blood"
+                element={
+                  <RequestBlood
+                    onSendOrder={handleSendOrder}
+                    externalSales={externalOrders}
+                  />
+                }
+              />
+
+              {/* Blodbankens orderhantering */}
+              <Route
+                path="/blood-orders"
+                element={
+                  <BloodShopPage
+                    externalSales={externalOrders}
+                    updateOrderStatus={updateOrderStatus}
+                  />
+                }
+              />
+
+              {/* Catch-all: Om ingen rutt matchar, gå till Dashboard.
+                  Denna ska ALLTID ligga sist i listan. */}
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </main>

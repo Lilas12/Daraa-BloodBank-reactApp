@@ -7,9 +7,11 @@ import {
   updateDoc,
   increment,
   addDoc,
+  deleteDoc,
   query,
   orderBy,
   serverTimestamp,
+  limit,
 } from "firebase/firestore";
 
 const InventoryPage = () => {
@@ -18,19 +20,38 @@ const InventoryPage = () => {
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [user, setUser] = useState(null);
+  const [livePulse, setLivePulse] = useState(0);
 
-  const [newStock, setNewStock] = useState({
-    bloodType: "A+",
-    quantity: 0,
-    donorName: "",
-  });
+  const [newStock, setNewStock] = useState({ bloodType: "A+", quantity: 0 });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLivePulse((prev) => (prev === 0 ? 1 : 0));
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const unsubscribeAuth = auth.onAuthStateChanged((currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        const unsubInv = listenToInventory();
-        const unsubTrans = listenToTransactions();
+        const unsubInv = onSnapshot(collection(db, "inventory"), (snapshot) => {
+          setInventory(
+            snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })),
+          );
+          setLoading(false);
+        });
+
+        const q = query(
+          collection(db, "transactions"),
+          orderBy("lastUpdated", "desc"),
+          limit(10),
+        );
+        const unsubTrans = onSnapshot(q, (snapshot) => {
+          setTransactions(
+            snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })),
+          );
+        });
 
         return () => {
           unsubInv();
@@ -40,294 +61,242 @@ const InventoryPage = () => {
         setLoading(false);
       }
     });
-
     return () => unsubscribeAuth();
   }, []);
-
-  const listenToInventory = () => {
-    return onSnapshot(
-      collection(db, "inventory"),
-      (snapshot) => {
-        const data = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setInventory(data);
-        setLoading(false);
-      },
-      (error) => console.error("Inventory error:", error),
-    );
-  };
-
-  const listenToTransactions = () => {
-    const q = query(
-      collection(db, "transactions"),
-      orderBy("fullDate", "desc"),
-    );
-
-    return onSnapshot(
-      q,
-      (snapshot) => {
-        const data = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setTransactions(data);
-      },
-      (error) => {
-        console.error("Sorteringsfel (oftast saknat index):", error);
-      },
-    );
-  };
 
   const totalUnits = inventory.reduce(
     (sum, item) => sum + (Number(item.quantity) || 0),
     0,
   );
 
-  const getGlobalStatus = (total) => {
-    if (total < 165)
-      return { label: "حرج جداً", color: "#EF4444", class: "pulse-red" };
-    if (total <= 330)
-      return { label: "احتياطي منخفض", color: "#F59E0B", class: "" };
-    return { label: "مخزون آمن", color: "#10B981", class: "" };
-  };
-
-  const globalStatus = getGlobalStatus(totalUnits);
-
-  const handleDeduct = async (id, bloodType, currentQty) => {
-    if (currentQty <= 0) return alert("المخزون فارغ!");
-    if (!user) return;
-
+  const handleAction = async (id, bloodType, isDeduct) => {
     try {
       const bloodRef = doc(db, "inventory", id);
+      const change = isDeduct ? -1 : 1;
       await updateDoc(bloodRef, {
-        quantity: increment(-1),
-        lastUpdated: new Date().toISOString().split("T")[0],
+        quantity: increment(change),
+        lastUpdated: serverTimestamp(),
       });
-
       await addDoc(collection(db, "transactions"), {
-        type: "استهلاك وحدة",
+        status: isDeduct ? "استهلاك وحدة" : "إضافة سريعة",
         bloodType: bloodType,
-        quantity: 1,
-        donorName: "مريض مشفى",
+        quantity: change,
+        lastUpdated: serverTimestamp(),
         performedBy: user.email,
-        date: new Date().toLocaleTimeString("ar-SY"),
-        fullDate: serverTimestamp(),
-        color: "#EF4444",
       });
     } catch (e) {
-      console.error("Fel vid uttag:", e);
+      console.error(e);
+    }
+  };
+
+  // NY FUNKTION: Ta bort en rad från loggen
+  const handleDeleteTransaction = async (transId) => {
+    if (window.confirm("هل أنت متأكد من حذف هذا النشاط من السجل؟")) {
+      try {
+        await deleteDoc(doc(db, "transactions", transId));
+      } catch (e) {
+        console.error("Error deleting transaction:", e);
+      }
     }
   };
 
   const handleAddStock = async () => {
-    const bloodItem = inventory.find(
-      (item) => item.bloodType === newStock.bloodType,
-    );
+    const bloodItem = inventory.find((i) => i.bloodType === newStock.bloodType);
     if (!bloodItem || newStock.quantity <= 0) return;
 
     try {
-      const bloodRef = doc(db, "inventory", bloodItem.id);
-      await updateDoc(bloodRef, {
+      await updateDoc(doc(db, "inventory", bloodItem.id), {
         quantity: increment(newStock.quantity),
-        lastUpdated: new Date().toISOString().split("T")[0],
+        lastUpdated: serverTimestamp(),
       });
 
       await addDoc(collection(db, "transactions"), {
-        type: "إضافة مخزون",
+        status: "إضافة مخزون",
         bloodType: newStock.bloodType,
         quantity: newStock.quantity,
-        donorName: newStock.donorName,
+        lastUpdated: serverTimestamp(),
         performedBy: user.email,
-        date: new Date().toLocaleTimeString("ar-SY"),
-        fullDate: serverTimestamp(),
-        color: "#10B981",
       });
 
       setShowAddModal(false);
-      setNewStock({ bloodType: "A+", quantity: 0, donorName: "" });
+      setNewStock({ bloodType: "A+", quantity: 0 });
     } catch (e) {
-      alert("Error adding stock");
+      console.error(e);
     }
   };
 
-  if (loading) return <div className="loading-screen">جاري التحميل...</div>;
-  if (!user) return <div className="loading-screen">الرجاء تسجيل الدخول</div>;
+  if (loading)
+    return (
+      <div
+        style={{ textAlign: "center", padding: "100px", fontFamily: "Cairo" }}
+      >
+        جاري المزامنة...
+      </div>
+    );
 
   return (
-    <div className="inventory-page animated-page">
+    <div className="inventory-page">
       <style>{`
-        .inventory-page { padding: 15px; font-family: 'Segoe UI', Tahoma; direction: rtl; background: #f8fafc; min-height: 100vh; }
-        .inventory-container { max-width: 1200px; margin: 0 auto; }
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
 
-        /* Header - Responsiv */
-        .inventory-header {
-          display: flex;
-          flex-direction: column;
-          gap: 15px;
-          margin-bottom: 25px;
-          background: white;
-          padding: 20px;
-          border-radius: 15px;
-          box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        .inventory-page { padding: 20px; font-family: 'Cairo', sans-serif; direction: rtl; background: #f8fafc; min-height: 100vh; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .live-value { display: inline-block; transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); color: #e11d48; }
+
+        .hero-card {
+          background: white; padding: 40px; border-radius: 30px; text-align: center;
+          margin-bottom: 30px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05); border: 1px solid #fff;
         }
 
-        @media (min-width: 768px) {
-          .inventory-header { flex-direction: row; justify-content: space-between; align-items: center; padding: 25px; border-radius: 20px; }
+        .blood-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        .blood-card {
+          background: white; padding: 25px; border-radius: 24px; text-align: center;
+          box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: 0.3s; border: 1px solid #f1f5f9;
         }
+        .blood-card:hover { transform: translateY(-5px); border-color: #fb7185; }
 
-        .inventory-header h1 { font-size: 1.5rem; margin: 0; }
-        @media (min-width: 768px) { .inventory-header h1 { font-size: 2rem; } }
-
-        .stat-card { background: white; padding: 20px; border-radius: 15px; text-align: center; margin-bottom: 20px; }
-        @media (min-width: 768px) { .stat-card { padding: 25px; border-radius: 20px; } }
-
-        .pulse-red { animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
-
-        /* Tabell som blir kort på mobil */
-        .inventory-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
-        .inventory-table thead { display: none; } /* Göm headern på mobil */
-
-        @media (min-width: 768px) {
-          .inventory-table { border-spacing: 0 10px; }
-          .inventory-table thead { display: table-header-group; }
+        .log-box { background: white; padding: 30px; border-radius: 30px; box-shadow: 0 10px 15px rgba(0,0,0,0.03); }
+        .log-item {
+          display: flex; justify-content: space-between; align-items: center;
+          padding: 15px; margin-bottom: 12px; border-radius: 16px;
+          background: #f8fafc; border: 1px solid #f1f5f9; transition: 0.2s;
+          position: relative;
         }
+        .log-item:hover { background: #fff; border-color: #e2e8f0; }
 
-        .inventory-table tr { display: flex; flex-direction: column; background: white; border-radius: 12px; padding: 15px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        @media (min-width: 768px) {
-          .inventory-table tr { display: table-row; background: transparent; box-shadow: none; }
+        .delete-btn {
+          background: none; border: none; color: #cbd5e1; cursor: pointer;
+          font-size: 1.1rem; transition: 0.2s; padding: 5px; margin-right: 10px;
         }
+        .delete-btn:hover { color: #e11d48; transform: scale(1.2); }
 
-        .inventory-table td {
-          padding: 10px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          border-bottom: 1px solid #f1f5f9;
+        .btn-add {
+          background: #1e293b; color: white; border: none; padding: 12px 25px;
+          border-radius: 14px; font-weight: bold; cursor: pointer;
         }
-        .inventory-table td:last-child { border-bottom: none; }
-
-        @media (min-width: 768px) {
-          .inventory-table td { display: table-cell; background: white; padding: 20px; border-radius: 0; border-bottom: none; }
-          .inventory-table td:first-child { border-radius: 10px 0 0 10px; }
-          .inventory-table td:last-child { border-radius: 0 10px 10px 0; }
-        }
-
-        /* Etiketter för mobil-vy i tabellen */
-        .inventory-table td::before { content: attr(data-label); font-weight: bold; color: #64748b; }
-        @media (min-width: 768px) { .inventory-table td::before { display: none; } }
-
-        .blood-badge { width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.9rem; }
-        @media (min-width: 768px) { .blood-badge { width: 50px; height: 50px; border-radius: 15px; font-size: 1rem; } }
-
-        .btn { padding: 10px 20px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 0.9rem; width: 100%; }
-        @media (min-width: 768px) { .btn { padding: 12px 25px; width: auto; font-size: 1rem; } }
-
-        .btn-primary { background: #E11D48; color: white; }
-        .btn-primary:hover { background: #BE123C; }
-
-        /* Logg-sektionen */
-        .transactions-card { margin-top: 30px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        @media (min-width: 768px) { .transactions-card { margin-top: 40px; padding: 30px; border-radius: 20px; } }
-
-        .transaction-item { padding: 15px 0; border-bottom: 1px solid #f1f5f9; display: flex; flex-direction: column; gap: 8px; }
-        @media (min-width: 480px) { .transaction-item { flex-direction: row; justify-content: space-between; align-items: center; } }
-
-        /* Modal - Responsiv */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
-        .modal { background: white; padding: 25px; border-radius: 20px; width: 100%; max-width: 450px; position: relative; }
-        .modal input, .modal select { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 10px; border: 1px solid #e2e8f0; font-family: inherit; }
       `}</style>
 
-      <div className="inventory-container">
-        <header className="inventory-header">
+      <div className="container">
+        <header
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "40px",
+          }}
+        >
           <div>
-            <h1>إدارة مخزون الدم</h1>
-            <p>محافظة درعا - تحديث لحظي</p>
+            <h1 style={{ margin: 0, fontWeight: 900 }}>بنك الدم الذكي</h1>
+            <p style={{ margin: 0, color: "#64748b" }}>
+              إدارة النشاطات اللحظية
+            </p>
           </div>
-          <button
-            className="btn btn-primary"
-            onClick={() => setShowAddModal(true)}
-          >
-            + إضافة مخزون
+          <button className="btn-add" onClick={() => setShowAddModal(true)}>
+            + إضافة كمية
           </button>
         </header>
 
-        <section
-          className={`stat-card ${globalStatus.class}`}
-          style={{ borderRight: `8px solid ${globalStatus.color}` }}
-        >
-          <div style={{ fontSize: "1.8rem", fontWeight: "bold" }}>
-            {totalUnits} / 385 وحدة
-          </div>
-          <div style={{ color: globalStatus.color, fontWeight: "bold" }}>
-            {globalStatus.label}
-          </div>
+        <section className="hero-card">
+          <span style={{ color: "#94a3b8", fontWeight: 700 }}>
+            إجمالي الوحدات
+          </span>
+          <h2 className="live-value" style={{ fontSize: "4rem", margin: 0 }}>
+            {totalUnits + livePulse}
+          </h2>
         </section>
 
-        <table className="inventory-table">
-          <thead>
-            <tr>
-              <th>الفصيلة</th>
-              <th>الكمية</th>
-              <th>الإجراء</th>
-            </tr>
-          </thead>
-          <tbody>
-            {inventory.map((item) => (
-              <tr key={item.id}>
-                <td data-label="الفصيلة:">
-                  <div
-                    className="blood-badge"
-                    style={{
-                      background: item.quantity < 20 ? "#EF4444" : "#10B981",
-                    }}
-                  >
-                    {item.bloodType}
-                  </div>
-                </td>
-                <td data-label="الكمية:">
-                  <strong>{item.quantity} وحدة</strong>
-                </td>
-                <td>
-                  <button
-                    className="btn"
-                    style={{ background: "#f1f5f9", color: "#475569" }}
-                    onClick={() =>
-                      handleDeduct(item.id, item.bloodType, item.quantity)
-                    }
-                  >
-                    صرف وحدة -
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="blood-grid">
+          {inventory.map((item) => (
+            <div className="blood-card" key={item.id}>
+              <div style={{ fontSize: "1.8rem", fontWeight: 900 }}>
+                {item.bloodType}
+              </div>
+              <div
+                style={{ fontSize: "1.5rem", fontWeight: 900 }}
+                className="live-value"
+              >
+                {item.quantity + (item.quantity > 0 ? livePulse : 0)}
+              </div>
+              <button
+                style={{
+                  width: "100%",
+                  marginTop: "10px",
+                  padding: "8px",
+                  border: "none",
+                  borderRadius: "10px",
+                  background: "#fff1f2",
+                  color: "#e11d48",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                }}
+                onClick={() => handleAction(item.id, item.bloodType, true)}
+              >
+                صرف وحدة
+              </button>
+            </div>
+          ))}
+        </div>
 
-        <section className="transactions-card">
-          <h3>سجل العمليات الأخير</h3>
-          {transactions.length === 0 && (
-            <p style={{ color: "#94a3b8" }}>
-              لا يوجد عمليات حالياً أو جاري التحميل...
-            </p>
-          )}
-          {transactions.slice(0, 10).map((t) => (
-            <div key={t.id} className="transaction-item">
-              <div>
-                <span style={{ fontWeight: "bold", color: t.color }}>
-                  {t.type} ({t.bloodType})
-                </span>
-                <div style={{ fontSize: "0.8rem", color: "#64748b" }}>
-                  {t.performedBy}
+        <section className="log-box">
+          <h3 style={{ fontWeight: 900, marginBottom: "20px" }}>
+            آخر النشاطات ⚡
+          </h3>
+          {transactions.map((t) => (
+            <div
+              key={t.id}
+              className="log-item"
+              style={{
+                borderRight: `5px solid ${t.quantity < 0 ? "#fb7185" : "#34d399"}`,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center" }}>
+                {/* Ta bort-knapp (Papperskorg) */}
+                <button
+                  className="delete-btn"
+                  onClick={() => handleDeleteTransaction(t.id)}
+                  title="حذف النشاط"
+                >
+                  🗑️
+                </button>
+
+                <div
+                  style={{
+                    width: "40px",
+                    height: "40px",
+                    borderRadius: "10px",
+                    background: t.quantity < 0 ? "#fff1f2" : "#f0fdf4",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginLeft: "15px",
+                  }}
+                >
+                  {t.quantity < 0 ? "📤" : "📥"}
+                </div>
+                <div>
+                  <div style={{ fontWeight: "bold" }}>
+                    {t.status || "عملية"} ({t.bloodType})
+                  </div>
+                  <div style={{ fontSize: "0.7rem", color: "#94a3b8" }}>
+                    {t.performedBy}
+                  </div>
                 </div>
               </div>
+
               <div style={{ textAlign: "left" }}>
-                <div style={{ fontWeight: "bold" }}>{t.quantity} وحدة</div>
-                <div style={{ fontSize: "0.8rem", color: "#94a3b8" }}>
-                  {t.date}
+                <div
+                  style={{
+                    fontWeight: "900",
+                    color: t.quantity < 0 ? "#e11d48" : "#10b981",
+                  }}
+                >
+                  {t.quantity > 0 ? "+" : ""}
+                  {t.quantity}
+                </div>
+                <div style={{ fontSize: "0.7rem", color: "#cbd5e1" }}>
+                  {t.lastUpdated?.toDate
+                    ? t.lastUpdated.toDate().toLocaleTimeString("ar-SY")
+                    : "الآن"}
                 </div>
               </div>
             </div>
@@ -336,29 +305,37 @@ const InventoryPage = () => {
       </div>
 
       {showAddModal && (
-        <div className="modal-overlay">
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3>إضافة مخزون جديد</h3>
-            <p
-              style={{
-                fontSize: "0.9rem",
-                color: "#64748b",
-                marginBottom: "20px",
-              }}
-            >
-              يرجى اختيار الفصيلة وتحديد الكمية المضافة.
-            </p>
-
-            <label
-              style={{
-                display: "block",
-                marginBottom: "5px",
-                fontSize: "0.85rem",
-              }}
-            >
-              الفصيلة:
-            </label>
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.2)",
+            backdropFilter: "blur(4px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 2000,
+          }}
+        >
+          <div
+            style={{
+              background: "white",
+              padding: "35px",
+              borderRadius: "25px",
+              width: "350px",
+            }}
+          >
+            <h3 style={{ fontWeight: 900, textAlign: "center" }}>
+              تحديث المخزون
+            </h3>
             <select
+              style={{
+                width: "100%",
+                padding: "12px",
+                marginBottom: "10px",
+                borderRadius: "10px",
+                border: "1px solid #eee",
+              }}
               onChange={(e) =>
                 setNewStock({ ...newStock, bloodType: e.target.value })
               }
@@ -369,19 +346,16 @@ const InventoryPage = () => {
                 </option>
               ))}
             </select>
-
-            <label
-              style={{
-                display: "block",
-                marginBottom: "5px",
-                fontSize: "0.85rem",
-              }}
-            >
-              الكمية بالوحدات:
-            </label>
             <input
               type="number"
-              placeholder="0"
+              placeholder="الكمية"
+              style={{
+                width: "100%",
+                padding: "12px",
+                marginBottom: "20px",
+                borderRadius: "10px",
+                border: "1px solid #eee",
+              }}
               onChange={(e) =>
                 setNewStock({
                   ...newStock,
@@ -389,23 +363,26 @@ const InventoryPage = () => {
                 })
               }
             />
-
-            <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
-              <button
-                className="btn btn-primary"
-                onClick={handleAddStock}
-                style={{ flex: 2 }}
-              >
-                حفظ البيانات
-              </button>
-              <button
-                className="btn"
-                onClick={() => setShowAddModal(false)}
-                style={{ flex: 1, background: "#f1f5f9" }}
-              >
-                إلغاء
-              </button>
-            </div>
+            <button
+              className="btn-add"
+              style={{ width: "100%", padding: "15px" }}
+              onClick={handleAddStock}
+            >
+              حفظ التعديل
+            </button>
+            <button
+              onClick={() => setShowAddModal(false)}
+              style={{
+                width: "100%",
+                background: "none",
+                border: "none",
+                marginTop: "10px",
+                color: "#94a3b8",
+                cursor: "pointer",
+              }}
+            >
+              إلغاء
+            </button>
           </div>
         </div>
       )}

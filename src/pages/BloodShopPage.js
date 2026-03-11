@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import styled, { keyframes } from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -8,8 +8,8 @@ import {
   FaHistory,
   FaPlusCircle,
   FaChartLine,
-  FaTimes,
   FaPrint,
+  FaTimes,
 } from "react-icons/fa";
 
 // --- 1. Färger & Animationer ---
@@ -29,7 +29,7 @@ const pulseGlow = keyframes`
   100% { box-shadow: 0 0 0 0px rgba(220, 20, 60, 0); }
 `;
 
-// --- 2. Styled Components (Responsiva) ---
+// --- 2. Styled Components ---
 const PageWrapper = styled.div`
   background-color: ${colors.bg};
   min-height: 100vh;
@@ -54,7 +54,6 @@ const StatsGrid = styled.div`
   @media (min-width: 768px) {
     grid-template-columns: repeat(2, 1fr);
     gap: 25px;
-    margin-bottom: 40px;
   }
 `;
 
@@ -72,36 +71,59 @@ const StatCard = styled.div`
   align-items: center;
   border-right: ${(props) =>
     props.border ? `8px solid ${colors.success}` : "none"};
-
-  @media (min-width: 768px) {
-    padding: 30px;
-    border-radius: 24px;
-  }
 `;
 
 const Section = styled.div`
   background: ${colors.white};
-  border-radius: 20px;
+  border-radius: 24px;
   padding: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   margin-bottom: 25px;
   border: 1px solid ${colors.border};
-  @media (min-width: 768px) {
-    padding: 30px;
-    border-radius: 24px;
-    margin-bottom: 40px;
-  }
 `;
 
 const SectionTitle = styled.h3`
   margin: 0 0 20px 0;
   color: ${colors.secondary};
-  font-size: 18px;
   display: flex;
   align-items: center;
   gap: 10px;
-  @media (min-width: 768px) {
-    font-size: 22px;
+`;
+
+const ModalOverlay = styled(motion.div)`
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+`;
+
+const ModalContent = styled(motion.div)`
+  background: white;
+  padding: 30px;
+  border-radius: 25px;
+  width: 100%;
+  max-width: 500px;
+`;
+
+const InputGroup = styled.div`
+  margin-bottom: 15px;
+  label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 14px;
+  }
+  input,
+  select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid ${colors.border};
+    font-family: "Cairo";
   }
 `;
 
@@ -109,7 +131,7 @@ const ExternalOrderRow = styled(motion.div)`
   display: flex;
   flex-direction: column;
   gap: 15px;
-  padding: 15px;
+  padding: 20px;
   border-radius: 18px;
   background: ${(props) =>
     props.status === "accepted" ? "#F0FDF4" : "#FFF5F5"};
@@ -123,43 +145,6 @@ const ExternalOrderRow = styled(motion.div)`
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    padding: 20px;
-  }
-`;
-
-const TableContainer = styled.div`
-  overflow-x: auto;
-  margin: 0 -15px;
-  padding: 0 15px;
-  @media (min-width: 768px) {
-    margin: 0;
-    padding: 0;
-  }
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 10px;
-  min-width: 600px;
-  th {
-    color: #9ca3af;
-    text-align: right;
-    padding: 0 15px;
-    font-size: 13px;
-  }
-`;
-
-const TableRow = styled.tr`
-  background: #f9fafb;
-  td {
-    padding: 15px;
-    &:first-child {
-      border-radius: 0 15px 15px 0;
-    }
-    &:last-child {
-      border-radius: 15px 0 0 15px;
-    }
   }
 `;
 
@@ -184,98 +169,60 @@ const ActionButton = styled.button`
   align-items: center;
   justify-content: center;
   gap: 8px;
-  width: ${(props) => (props.fullWidth ? "100%" : "auto")};
   transition: 0.3s;
+  width: ${(props) => (props.fullWidth ? "100%" : "auto")};
   &:hover {
     transform: translateY(-2px);
     filter: brightness(1.1);
   }
 `;
 
-// --- NYA FIXADE DEFINITIONER (För ESLint felen) ---
-const ModalOverlay = styled(motion.div)`
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  backdrop-filter: blur(4px);
-  padding: 20px;
-`;
-
-const ModalContent = styled(motion.div)`
-  background: white;
-  padding: 25px;
-  border-radius: 25px;
-  width: 100%;
-  max-width: 550px;
-  max-height: 90vh;
-  overflow-y: auto;
-  @media (min-width: 768px) {
-    padding: 35px;
-    border-radius: 30px;
-  }
-`;
-
-const InputGroup = styled.div`
-  margin-bottom: 15px;
-  label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: bold;
-    color: ${colors.secondary};
-    font-size: 14px;
-  }
-  input,
-  select {
-    width: 100%;
-    padding: 12px;
-    border-radius: 12px;
-    border: 1.5px solid ${colors.border};
-    font-family: "Cairo";
-    outline: none;
-    transition: 0.3s;
-    &:focus {
-      border-color: ${colors.primary};
-    }
-  }
-`;
-
 // --- 3. Hjälpfunktioner ---
 const printInvoice = (sale) => {
+  const finalPrice = sale.amount || sale.totalPrice || 0;
+  const productName = sale.product || sale.productName || "منتج دم";
+  const customer = sale.customerName || "طلب مستشفى خارجي";
+
   const printWindow = window.open("", "_blank");
   printWindow.document.write(`
-    <html dir="rtl"><head><title>فاتورة - ${sale.invoiceNo}</title><style>@import url('https://fonts.googleapis.com/css2?family=Cairo&display=swap'); body { font-family: 'Cairo', sans-serif; padding: 40px; } .header { text-align: center; border-bottom: 3px solid ${colors.primary}; padding-bottom: 20px; } .invoice-box { border: 1px solid #eee; padding: 30px; border-radius: 20px; margin-top: 30px; } .row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f9f9f9; } .total { font-size: 28px; font-weight: bold; color: ${colors.primary}; margin-top: 30px; text-align: left; } </style></head>
-    <body><div class="header"><h1>بنك الدم الوطني</h1><p>رقم الفاتورة: ${sale.invoiceNo}</p></div><div class="invoice-box"><div class="row"><span>المريض:</span> <span>${sale.patientName}</span></div><div class="row"><span>الجهة:</span> <span>${sale.customerName}</span></div><div class="row"><span>المنتج:</span> <span>${sale.product} (${sale.bloodType})</span></div><div class="total">المبلغ النهائي: ${sale.amount?.toLocaleString()} ل.س</div></div></body></html>
+    <html dir="rtl"><head><title>فاتورة - ${sale.invoiceNo || "Order"}</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Cairo&display=swap');
+      body { font-family: 'Cairo', sans-serif; padding: 40px; color: #333; }
+      .header { text-align: center; border-bottom: 3px solid #DC143C; padding-bottom: 20px; }
+      .invoice-box { border: 1px solid #eee; padding: 30px; border-radius: 20px; margin-top: 30px; }
+      .row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f9f9f9; }
+      .total { font-size: 28px; font-weight: bold; color: #DC143C; margin-top: 30px; text-align: left; }
+    </style></head>
+    <body>
+      <div class="header"><h1>بنك الدم الوطني</h1><p>رقم الفاتورة: ${sale.invoiceNo || "INV-EXT"}</p></div>
+      <div class="invoice-box">
+        <div class="row"><span>المريض:</span> <span>${sale.patientName}</span></div>
+        <div class="row"><span>الجهة:</span> <span>${customer}</span></div>
+        <div class="row"><span>المنتج:</span> <span>${productName} (${sale.bloodType})</span></div>
+        <div class="row"><span>الكمية:</span> <span>${sale.quantity || 1}</span></div>
+        <div class="total">المبلغ النهائي: ${finalPrice.toLocaleString()} ل.س</div>
+      </div>
+    </body></html>
   `);
   printWindow.document.close();
   setTimeout(() => printWindow.print(), 500);
 };
 
 // --- 4. Huvudkomponent ---
-const BloodSalesPage = ({
-  externalSales = [],
-  updateOrderStatus,
-  clearNotifications,
-}) => {
-  const [showModal, setShowModal] = useState(false);
-  const hospitalsInDaraa = [
-    "مراجعة خارجية",
-    "مستشفى درعا الوطني",
-    "مستشفى الصنمين",
-    "مستشفى الشيخ مسكين",
-    "مستشفى ازرع",
-    "مركز درعا الطبي",
-    "مستشفى الأطفال",
-    "مستشفى الولادة",
-  ];
+const BloodSalesPage = ({ externalSales = [], updateOrderStatus }) => {
+  const [showModal, setShowModal] = useState(false); // Fixat: showModal definierad korrekt
 
-  const [totalRevenue, setTotalRevenue] = useState(() => {
+  const [localRevenue, setLocalRevenue] = useState(() => {
     const saved = localStorage.getItem("totalRevenue");
     return saved ? parseInt(saved) : 3500000;
   });
+
+  const totalCalculatedRevenue =
+    localRevenue +
+    externalSales
+      .filter((o) => o.status === "accepted")
+      .reduce((sum, o) => sum + (o.totalPrice || 0), 0);
 
   const [sales, setSales] = useState([
     {
@@ -288,16 +235,6 @@ const BloodSalesPage = ({
       amount: 240000,
       status: "تم التسليم",
     },
-    {
-      id: 2,
-      invoiceNo: "INV-8822",
-      customerName: "مراجعة خارجية",
-      patientName: "محمد علي",
-      bloodType: "B-",
-      product: "دم كامل",
-      amount: 200000,
-      status: "تم التسليم",
-    },
   ]);
 
   const [formData, setFormData] = useState({
@@ -308,10 +245,6 @@ const BloodSalesPage = ({
     quantity: 1,
   });
 
-  useEffect(() => {
-    if (clearNotifications) clearNotifications();
-  }, [clearNotifications]);
-
   const handleFormSubmit = (e) => {
     e.preventDefault();
     const unitPrice = formData.product === "دم كامل" ? 200000 : 240000;
@@ -321,20 +254,16 @@ const BloodSalesPage = ({
       invoiceNo: `INV-${Math.floor(1000 + Math.random() * 9000)}`,
       ...formData,
       amount: total,
-      status: "تم التسليم",
     };
 
     setSales([newSale, ...sales]);
-    const newRev = totalRevenue + total;
-    setTotalRevenue(newRev);
-    localStorage.setItem("totalRevenue", newRev);
+    setLocalRevenue((prev) => prev + total);
     setShowModal(false);
   };
 
   return (
     <PageWrapper>
       <Container>
-        {/* Statistik sektion */}
         <StatsGrid>
           <StatCard gradient>
             <div>
@@ -350,7 +279,7 @@ const BloodSalesPage = ({
           <StatCard border>
             <div>
               <div style={{ color: "#6B7280", fontSize: "12px" }}>
-                الإيرادات (ل.س)
+                الإيرادات الإجمالية (ل.س)
               </div>
               <div
                 style={{
@@ -359,7 +288,7 @@ const BloodSalesPage = ({
                   color: colors.secondary,
                 }}
               >
-                {totalRevenue.toLocaleString()}
+                {totalCalculatedRevenue.toLocaleString()}
               </div>
             </div>
             <FaFileInvoiceDollar
@@ -370,21 +299,15 @@ const BloodSalesPage = ({
           </StatCard>
         </StatsGrid>
 
-        {/* Externa Order sektion */}
+        {/* --- EXTERNA ORDER-SEKTION --- */}
         <Section>
           <SectionTitle>
             <FaHospital color={colors.primary} /> طلبات المستشفيات الخارجية
           </SectionTitle>
           <AnimatePresence>
             {externalSales.length === 0 ? (
-              <p
-                style={{
-                  textAlign: "center",
-                  color: "#9CA3AF",
-                  padding: "20px",
-                }}
-              >
-                لا يوجد طلبات نشطة
+              <p style={{ textAlign: "center", color: "#9CA3AF" }}>
+                لا يوجد طلبات نشطة حالياً
               </p>
             ) : (
               externalSales.map((order) => (
@@ -393,19 +316,18 @@ const BloodSalesPage = ({
                     <div style={{ fontSize: "11px", color: "#9CA3AF" }}>
                       {order.timestamp}
                     </div>
-                    <div style={{ fontWeight: "bold", fontSize: "16px" }}>
+                    <div style={{ fontWeight: "bold", fontSize: "17px" }}>
                       المريض: {order.patientName}
                     </div>
                     <div style={{ marginTop: "5px" }}>
-                      <Badge>{order.bloodType}</Badge>{" "}
-                      <span style={{ fontSize: "14px" }}>
+                      <Badge>{order.bloodType}</Badge>
+                      <span style={{ marginRight: "10px" }}>
                         {order.productName} × {order.quantity}
                       </span>
                     </div>
                   </div>
                   {order.status === "pending" ? (
                     <ActionButton
-                      fullWidth
                       bg={colors.success}
                       onClick={() => updateOrderStatus?.(order.id, "accepted")}
                     >
@@ -413,11 +335,10 @@ const BloodSalesPage = ({
                     </ActionButton>
                   ) : (
                     <ActionButton
-                      fullWidth
                       bg={colors.secondary}
                       onClick={() => printInvoice(order)}
                     >
-                      <FaPrint /> طباعة
+                      <FaPrint /> طباعة الفاتورة
                     </ActionButton>
                   )}
                 </ExternalOrderRow>
@@ -426,7 +347,7 @@ const BloodSalesPage = ({
           </AnimatePresence>
         </Section>
 
-        {/* Försäljningslogg sektion */}
+        {/* --- LOKAL FÖRSÄLJNINGSLOGG --- */}
         <Section>
           <div
             style={{
@@ -437,18 +358,29 @@ const BloodSalesPage = ({
             }}
           >
             <SectionTitle style={{ marginBottom: 0 }}>
-              <FaHistory /> سجل المبيعات
+              <FaHistory /> سجل المبيعات المباشرة
             </SectionTitle>
             <ActionButton onClick={() => setShowModal(true)}>
-              <FaPlusCircle /> بيع جديد
+              <FaPlusCircle /> بيع مباشر
             </ActionButton>
           </div>
-          <TableContainer>
-            <Table>
+          <div style={{ overflowX: "auto" }}>
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "separate",
+                borderSpacing: "0 10px",
+              }}
+            >
               <thead>
-                <tr>
+                <tr
+                  style={{
+                    color: "#9CA3AF",
+                    textAlign: "right",
+                    fontSize: "13px",
+                  }}
+                >
                   <th>المعرف</th>
-                  <th>الجهة</th>
                   <th>المريض</th>
                   <th>المنتج</th>
                   <th>القيمة</th>
@@ -457,9 +389,16 @@ const BloodSalesPage = ({
               </thead>
               <tbody>
                 {sales.map((sale) => (
-                  <TableRow key={sale.id}>
-                    <td style={{ fontWeight: "bold" }}>{sale.invoiceNo}</td>
-                    <td>{sale.customerName}</td>
+                  <tr key={sale.id} style={{ background: "#f9fafb" }}>
+                    <td
+                      style={{
+                        padding: "15px",
+                        borderRadius: "0 15px 15px 0",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {sale.invoiceNo}
+                    </td>
                     <td>{sale.patientName}</td>
                     <td>
                       <Badge bg="#F1F5F9" color="#475569">
@@ -470,21 +409,21 @@ const BloodSalesPage = ({
                     <td style={{ fontWeight: "bold", color: colors.primary }}>
                       {sale.amount.toLocaleString()}
                     </td>
-                    <td>
+                    <td style={{ borderRadius: "15px 0 0 15px" }}>
                       <FaPrint
                         onClick={() => printInvoice(sale)}
-                        style={{ cursor: "pointer", color: colors.secondary }}
+                        style={{ cursor: "pointer" }}
                       />
                     </td>
-                  </TableRow>
+                  </tr>
                 ))}
               </tbody>
-            </Table>
-          </TableContainer>
+            </table>
+          </div>
         </Section>
       </Container>
 
-      {/* Modal för ny försäljning */}
+      {/* --- MODAL FÖR NY FÖRSÄLJNING --- */}
       <AnimatePresence>
         {showModal && (
           <ModalOverlay
@@ -513,25 +452,12 @@ const BloodSalesPage = ({
                   <label>اسم المريض</label>
                   <input
                     required
-                    placeholder="الاسم بالكامل"
+                    placeholder="الاسم الكامل"
+                    value={formData.patientName}
                     onChange={(e) =>
                       setFormData({ ...formData, patientName: e.target.value })
                     }
                   />
-                </InputGroup>
-                <InputGroup>
-                  <label>الجهة</label>
-                  <select
-                    onChange={(e) =>
-                      setFormData({ ...formData, customerName: e.target.value })
-                    }
-                  >
-                    {hospitalsInDaraa.map((h, i) => (
-                      <option key={i} value={h}>
-                        {h}
-                      </option>
-                    ))}
-                  </select>
                 </InputGroup>
                 <div
                   style={{
@@ -543,13 +469,16 @@ const BloodSalesPage = ({
                   <InputGroup>
                     <label>الفصيلة</label>
                     <select
+                      value={formData.bloodType}
                       onChange={(e) =>
                         setFormData({ ...formData, bloodType: e.target.value })
                       }
                     >
                       {["O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-"].map(
                         (t) => (
-                          <option key={t}>{t}</option>
+                          <option key={t} value={t}>
+                            {t}
+                          </option>
                         ),
                       )}
                     </select>
@@ -557,19 +486,21 @@ const BloodSalesPage = ({
                   <InputGroup>
                     <label>المنتج</label>
                     <select
+                      value={formData.product}
                       onChange={(e) =>
                         setFormData({ ...formData, product: e.target.value })
                       }
                     >
                       <option value="دم كامل">دم كامل</option>
                       <option value="بلازما">بلازما</option>
+                      <option value="صفايح">صفايح</option>
                     </select>
                   </InputGroup>
                 </div>
                 <ActionButton
                   fullWidth
-                  style={{ padding: "15px", marginTop: "10px" }}
                   type="submit"
+                  style={{ marginTop: "10px" }}
                 >
                   إتمام العملية
                 </ActionButton>
